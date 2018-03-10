@@ -6,17 +6,17 @@
 	});
 
 	$.fn.sparkline.defaults.bar.height = 63;
-	$.fn.sparkline.defaults.bar.barWidth = 6;
+	$.fn.sparkline.defaults.bar.barWidth = 8;
 	$.fn.sparkline.defaults.bar.barSpacing = 1;
 	$.fn.sparkline.defaults.bar.tooltipClassname = 'jqstooltip';
 	$.fn.sparkline.defaults.bar.tooltipOffsetX = 0;
 	$.fn.sparkline.defaults.bar.tooltipFormat = $.spformat('<div class="tooltip-arrow"></div><div class="tooltip-inner">{{prefix}}{{value}} {{suffix}}</div>');
 	$.fn.sparkline.defaults.bar.colorMap = $.range_map({
-		'0:60': '#10a0de',
-		'60:150': '#7bcc3a',
+		'0:60': '#F74B4B',
+		'60:150': '#ff8a00',
 		'150:400': '#FFD162',
-		'400:600': '#ff8a00',
-		'600:': '#F74B4B'
+		'400:600': '#7bcc3a',
+		'600:': '#10a0de'
 	});
 
 	moment.relativeTimeThreshold('s', 60);
