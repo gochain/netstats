@@ -18,6 +18,7 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 	$scope.avgBlockTime = 0;
 	$scope.blockPropagationAvg = 0;
 	$scope.avgHashrate = 0;
+	$scope.avgTransactionRate = 0;
 	$scope.uncleCount = 0;
 	$scope.bestStats = {};
 
@@ -332,6 +333,9 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 
 				if( !_.isEqual($scope.avgHashrate, data.avgHashrate) )
 					$scope.avgHashrate = data.avgHashrate;
+
+				if( !_.isEqual($scope.avgTransactionRate, data.avgTransactionRate) )
+					$scope.avgTransactionRate = data.avgTransactionRate;
 
 				if( !_.isEqual($scope.lastGasLimit, data.gasLimit) && data.gasLimit.length >= MAX_BINS )
 					$scope.lastGasLimit = data.gasLimit;
