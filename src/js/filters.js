@@ -361,6 +361,32 @@ angular.module('netStatsApp.filters', [])
 		return $sce.trustAsHtml('? <span class="small-hash">' + unit + 'KH/s</span>');
 	};
 }])
+.filter('transactionRateFilter', ['$sce', '$filter', function ($sce, filter) {
+	return function (rate) {
+		if (rate === null)
+			rate = 0;
+
+		var result = 0;
+		var unit = 'K';
+
+		if (rate !== 0 && rate < 1000) {
+			result = rate;
+			unit = '';
+		}
+
+		if (rate >= 1000 && rate < Math.pow(1000, 2)) {
+			result = rate / 1000;
+			unit = 'K';
+		}
+
+		if (rate >= Math.pow(1000, 2)) {
+			result = rate / Math.pow(1000, 2);
+			unit = 'M';
+		}
+
+		return $sce.trustAsHtml(filter('number')(result.toFixed(1)) + ' <span class="small-hash">' + unit + 'tx/s</span>');
+	};
+}])
 .filter('blockPropagationFilter', function() {
 	return function(ms, prefix) {
 		if(typeof prefix === 'undefined')
