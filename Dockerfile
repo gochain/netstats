@@ -7,6 +7,6 @@ ADD package.* /netstats
 RUN cd /netstats && npm install
 
 ADD . /netstats
-RUN	grunt all
+RUN	grunt && grunt build
 
 CMD ["npm", "start"]
