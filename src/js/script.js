@@ -6,7 +6,7 @@
 	});
 
 	$.fn.sparkline.defaults.bar.height = 63;
-	$.fn.sparkline.defaults.bar.barWidth = 8;
+	$.fn.sparkline.defaults.bar.barWidth = 6;
 	$.fn.sparkline.defaults.bar.barSpacing = 1;
 	$.fn.sparkline.defaults.bar.tooltipClassname = 'jqstooltip';
 	$.fn.sparkline.defaults.bar.tooltipOffsetX = 0;
@@ -15,8 +15,8 @@
 		'0:60': '#F74B4B',
 		'60:150': '#ff8a00',
 		'150:400': '#FFD162',
-		'400:600': '#7bcc3a',
-		'600:': '#10a0de'
+		'400:1600': '#7bcc3a',
+		'1600:': '#10a0de'
 	});
 
 	moment.relativeTimeThreshold('s', 60);
@@ -33,5 +33,5 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
 // ga('create', 'UA-68390837-2', 'auto');
-ga('create', 'UA-80834434-1', 'auto');
+// ga('create', 'UA-80834434-1', 'auto');
 ga('send', 'pageview');

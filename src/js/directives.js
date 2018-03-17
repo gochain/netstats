@@ -102,13 +102,15 @@ angular.module('netStatsApp.directives', [])
 
 				return function(scope, element, attrs)
 				{
+					var parentWidth = element.parent().first().width();
 					attrs.$observe("data", function (newValue)
 					{
 						element.html(newValue);
 						element.addClass("big-details");
 						element.sparkline('html', {
 							type: 'bar',
-							tooltipSuffix: (attrs.tooltipsuffix || '')
+							tooltipSuffix: (attrs.tooltipsuffix || ''),
+							barWidth: (parentWidth/45).toFixed()
 						});
 					});
 				};

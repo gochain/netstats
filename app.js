@@ -272,7 +272,10 @@ api.on('connection', function (spark)
 
 	spark.on('history', function (data)
 	{
-		console.success('API', 'HIS', 'Got history from:', data.id);
+		// console.log("DATA",data);
+		var from =  data.history[0] ? data.history[0].number : 'none';
+		var to = data.history[data.history.length-1] ? data.history[data.history.length-1].number : 'none';
+		console.success('API', 'HIS', 'Got history from:', data.id,"from",from,"-",to);
 
 		var time = chalk.reset.cyan((new Date()).toJSON()) + " ";
 		console.time(time, 'COL', 'CHR', 'Got charts in');
