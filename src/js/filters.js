@@ -369,17 +369,13 @@ angular.module('netStatsApp.filters', [])
 		var result = 0;
 		var unit = 'K';
 
-		if (rate !== 0 && rate < 1000) {
+		if (rate !== 0 && rate < 10000) {
 			result = rate;
 			unit = '';
-		}
-
-		if (rate >= 1000 && rate < Math.pow(1000, 2)) {
+		} else if (rate < Math.pow(1000, 2)) {
 			result = rate / 1000;
 			unit = 'K';
-		}
-
-		if (rate >= Math.pow(1000, 2)) {
+		} else if (rate >= Math.pow(1000, 2)) { // keeping the condition to cover the zero case
 			result = rate / Math.pow(1000, 2);
 			unit = 'M';
 		}
