@@ -15,7 +15,7 @@ This is a visual interface for tracking ethereum network status. It uses WebSock
 ```sh
 export WS_SECRET=YOURSECRET
 make docker
-make run
+WS_SECRET=YOOOOO make run
 ```
 
 Check it out at http://localhost:3000

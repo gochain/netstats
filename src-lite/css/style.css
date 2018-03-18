@@ -154,7 +154,7 @@ span.small-title span.small {
 
 .big-info.chart {
 	height: 120px;
-	-webkit-box-sizing: border-box
+	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 }
 

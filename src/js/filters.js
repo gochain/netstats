@@ -367,9 +367,9 @@ angular.module('netStatsApp.filters', [])
 			rate = 0;
 
 		var result = 0;
-		var unit = 'K';
+		var unit = '';
 
-		if (rate !== 0 && rate < 10000) {
+		if (rate < 10000) {
 			result = rate;
 			unit = '';
 		} else if (rate < Math.pow(1000, 2)) {
@@ -380,7 +380,7 @@ angular.module('netStatsApp.filters', [])
 			unit = 'M';
 		}
 
-		return $sce.trustAsHtml(filter('number')(result.toFixed(1)) + ' <span class="small-hash">' + unit + 'tx/s</span>');
+		return $sce.trustAsHtml(filter('number')(result.toFixed(0)) + ' <span class="small-hash">' + unit + 'tx/s</span>');
 	};
 }])
 .filter('blockPropagationFilter', function() {
