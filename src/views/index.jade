@@ -17,7 +17,7 @@ block content
           div.pull-left.icon-full-width
             i.icon-hashrate
           div.big-details-holder
-            span.small-title avg transactions rate
+            span.small-title avg transaction rate
             span.big-details(ng-bind-html="avgTransactionRate | transactionRateFilter")
           div.clearfix
       div.col-xs-3.stat-holder
@@ -84,12 +84,13 @@ block content
           div.col-xs-12
             div.row
               div.col-xs-4.stat-holder.xpull-right
-                div.big-info.chart.xdouble-chart
-                  span.small-title transactions per second
+                div.big-info.chart.text-info
+                  span.small-title tps per block
                   sparkchart.big-details.spark-transactionsrate(data="{{transactionRate.join(',')}}")
 
               div.col-xs-4.stat-holder
-                div.big-info.chart(class="{{ avgBlockTime | avgTimeClass }}")
+                div.big-info.chart.text-info
+                  //- (class="{{ avgBlockTime | avgTimeClass }}")
                   //- i.icon-time
                   span.small-title block time
                   //- span.small-value {{ avgBlockTime | avgTimeFilter }}
