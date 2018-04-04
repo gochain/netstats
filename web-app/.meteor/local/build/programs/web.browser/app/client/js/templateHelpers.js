@@ -594,13 +594,6 @@ Template.registerHelper('nodeVersion', function(version) {
     {
         var tmp = version.split('/');
 
-        tmp[0] = tmp[0].replace('Ethereum(++)', 'Eth');
-
-        if(tmp[0].indexOf('pyethapp') === 0)
-        {
-            tmp[0] = 'pyeth';
-        }
-
         if(tmp[1][0] !== 'v' && tmp[1][2] !== '.')
         {
             tmp.splice(1,1);
