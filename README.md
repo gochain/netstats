@@ -3,6 +3,8 @@ GoChain Network Stats
 
 This is a visual interface for tracking GoChain network status. It uses WebSockets to receive stats from running nodes and output them through an angular interface. It is the front-end implementation for [net-intelligence-api](https://github.com/gochain-io/net-intelligence-api).
 
+![Screenshot](screenshot.png?raw=true)
+
 ## Prequisites
 
 * Docker
