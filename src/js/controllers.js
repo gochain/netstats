@@ -267,6 +267,19 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 
 				break;
 
+			case "queued":
+				var index = findIndex({id: data.id});
+
+				if( !_.isUndefined(data.id) && index >= 0 )
+				{
+					var node = $scope.nodes[index];
+
+					if( !_.isUndefined(node) && !_.isUndefined(node.stats.queued) && !_.isUndefined(data.queued) )
+						$scope.nodes[index].stats.queued = data.queued;
+				}
+
+				break;
+
 			case "stats":
 				var index = findIndex({id: data.id});
 

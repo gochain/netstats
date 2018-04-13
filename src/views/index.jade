@@ -179,18 +179,20 @@ block content
             th
               i.icon-group(data-toggle="tooltip", data-placement="top", title="Peers", ng-click="orderTable(['-stats.peers'], false)")
             th
+              i.icon-network(data-toggle="tooltip", data-placement="top", title="Queued transactions", ng-click="orderTable(['-stats.queued'], false)")
+            th
               i.icon-network(data-toggle="tooltip", data-placement="top", title="Pending transactions", ng-click="orderTable(['-stats.pending'], false)")
+            th
+              i.icon-check-o(data-toggle="tooltip", data-placement="top", title="Block transactions", ng-click="orderTable(['-stats.block.transactions.length'], false)")
+            th.th-blocktime
+              i.icon-time(data-toggle="tooltip", data-placement="top", title="Last block time", ng-click="orderTable(['-stats.block.received'], false)")
             th
               i.icon-block(data-toggle="tooltip", data-placement="top", title="Last block", ng-click="orderTable(['-stats.block.number', 'stats.block.propagation'], false)")
             th.th-blockhash &nbsp;
             //- th.th-blockhash
             //-   i.icon-difficulty(data-toggle="tooltip", data-placement="top", title="Total difficulty", ng-click="orderTable(['-stats.block.totalDifficulty'], false)")
-            th
-              i.icon-check-o(data-toggle="tooltip", data-placement="top", title="Block transactions", ng-click="orderTable(['-stats.block.transactions.length'], false)")
             //- th
             //-   i.icon-uncle(data-toggle="tooltip", data-placement="top", title="Uncles", ng-click="orderTable(['-stats.block.uncles.length'], false)")
-            th.th-blocktime
-              i.icon-time(data-toggle="tooltip", data-placement="top", title="Last block time", ng-click="orderTable(['-stats.block.received'], false)")
             th.th-peerPropagationTime
               i.icon-gas(data-toggle="tooltip", data-placement="top", title="Propagation time", ng-click="orderTable(['-stats.block.number', 'stats.block.propagation'], false)")
             th.th-peerPropagationChart
@@ -213,7 +215,10 @@ block content
               span.small {{ node.readable.latency }}
             td(class="{{ node.stats.mining | hashrateClass : node.stats.active }}", ng-bind-html="node.stats.hashrate | hashrateFilter : node.stats.mining")
             td(class="{{ node.stats.peers | peerClass : node.stats.active }}", style="padding-left: 11px;") {{node.stats.peers}}
+            td(style="padding-left: 15px;") {{node.stats.queued}}
             td(style="padding-left: 15px;") {{node.stats.pending}}
+            td(style="padding-left: 14px;") {{node.stats.block.transactions.length || 0}}
+            td(class="{{ node.stats.block.received | timeClass : node.stats.active }}") {{node.stats.block.received | blockTimeFilter }}
             td(class="{{ node.stats | blockClass : bestBlock }}")
               span(class="{{ node.readable.forkMessage ? node.readable.forkClass : '' }}") {{'#'}}{{ node.stats.block.number | number }}
               //- a.small(data-toggle="tooltip", data-placement="top", data-html="true", data-original-title="{{ node.readable.forkMessage }}", class="{{ node.readable.forkClass }}")
@@ -222,9 +227,7 @@ block content
               span.small {{node.stats.block.hash | hashFilter}}
             //- td(class="{{ node.stats | blockClass : bestBlock }}")
             //-   span.small {{node.stats.block.totalDifficulty | number}}
-            td(style="padding-left: 14px;") {{node.stats.block.transactions.length || 0}}
             //- td(style="padding-left: 14px;") {{node.stats.block.uncles.length || 0}}
-            td(class="{{ node.stats.block.received | timeClass : node.stats.active }}") {{node.stats.block.received | blockTimeFilter }}
             td(class="{{ node.stats | propagationTimeClass : bestBlock }}")
               div.propagationBox
               span {{node.stats.block.propagation | blockPropagationFilter}}

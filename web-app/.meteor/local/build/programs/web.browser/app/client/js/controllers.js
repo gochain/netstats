@@ -280,6 +280,20 @@ function socketAction(action, data)
 
 			break;
 
+		case "queued":
+			var foundNode = Nodes.findOne(data.id);
+
+			if( !_.isUndefined(data.id) && foundNode )
+			{
+
+				if( !_.isUndefined(foundNode) && !_.isUndefined(foundNode.stats.queued) && !_.isUndefined(data.queued) )
+					Nodes.update(data.id, {$set: {
+						'stats.queued': data.queued
+					}});
+			}
+
+			break;
+
 		case "stats":
 			var foundNode = Nodes.findOne(data.id);
 
