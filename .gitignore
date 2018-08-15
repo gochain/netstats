@@ -13,3 +13,4 @@ config/nodes.js
 ws_secret.json
 stats.json
 app.json
+tmp/
