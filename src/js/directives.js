@@ -212,14 +212,14 @@ angular.module('netStatsApp.directives', [])
 				scope.init = function() {
 					element.empty();
 
-					var width = 628,
-						height = 202;
+					var width = 800,
+						height = 400;
 
 					scope.map = new Datamap({
 						element: element[0],
 						scope: 'world',
 						width: width,
-						height: 242,
+						height: height,
 						fills: {
 							success: '#7BCC3A',
 							info: '#10A0DE',
