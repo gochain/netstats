@@ -4,7 +4,7 @@ html {
 
 body {
 	width: 100%;
-	min-width: 1200px;
+	min-width: 1000px;
 	font-smooth: auto;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -343,7 +343,7 @@ nodepropagchart {
 	position: relative;
 	display: block;
 	width: 100%;
-	height: 242px;
+	height: 364px;
 	overflow: hidden;
 }
 
