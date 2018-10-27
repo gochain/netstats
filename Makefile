@@ -1,4 +1,4 @@
-
+default: generate
 
 docker: 
 	docker build -t gcr.io/gochain-core/netstats:latest .
@@ -9,4 +9,9 @@ run:
 release: docker
 	./release.sh
 
-.PHONY: test build docker release run
+generate: assets/assets.gen.go
+
+assets/assets.gen.go: $(shell find dist/ -type f)
+	cd dist && genesis -pkg assets -o ../assets/assets.gen.go index.html favicon.ico css fonts js
+
+.PHONY: default generate test build docker release run
