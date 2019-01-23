@@ -1,4 +1,4 @@
-GoChain Network Stats
+GoStats - GoChain Network Stats Dashboard
 ============
 [![CircleCI](https://circleci.com/gh/gochain-io/netstats/tree/master.svg?style=svg)](https://circleci.com/gh/gochain-io/netstats/tree/master)
 
