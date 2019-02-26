@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -82,11 +83,16 @@ func readTrustedFile(path string) (map[string]*netstats.Geo, error) {
 
 	geoByIP := make(map[string]*netstats.Geo)
 	if buf, err := ioutil.ReadFile(path); os.IsNotExist(err) && useDefault {
+		log.Printf("No default trusted file found: %s\n", path)
 		return geoByIP, nil
 	} else if err != nil {
 		return nil, err
-	} else if err := json.Unmarshal(buf, geoByIP); err != nil {
+	} else if err := json.Unmarshal(buf, &geoByIP); err != nil {
 		return nil, err
+	}
+	log.Println("Loaded trusted nodes:")
+	for ip, geo := range geoByIP {
+		fmt.Printf("  %q: %#v\n", ip, geo)
 	}
 	return geoByIP, nil
 }
