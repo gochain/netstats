@@ -137,10 +137,12 @@ func (db *DB) CreateNodeIfNotExists(ctx context.Context, node *Node) error {
 		if geo := db.GeoByIP[node.Info.IP]; geo != nil {
 			node.Trusted = true
 			node.Geo = geo.Clone()
+			log.Printf("Node %q is a trusted node: %#v", node.Info.IP, node.Geo)
 		} else if geo, err := db.GeoService.GeoByIP(context.Background(), node.Info.IP); err != nil {
-			log.Printf("cannot find geolocation by ip: %s", node.Info.IP)
+			log.Printf("Cannot find geolocation by ip: %s", node.Info.IP)
 		} else if geo != nil {
 			node.Geo = geo.Clone()
+			log.Printf("Node %q is an unknown node: %#v", node.Info.IP, node.Geo)
 		}
 	}
 
