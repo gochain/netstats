@@ -38,7 +38,7 @@ npm install
 sudo npm install -g grunt-cli
 ```
 
-##Build the resources
+## Build the resources
 NetStats features two versions: the full version and the lite version. In order to build the static files you have to run grunt tasks which will generate dist or dist-lite directories containing the js and css files, fonts and images.
 
 
