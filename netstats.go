@@ -43,7 +43,7 @@ type Block struct {
 	Arrived          int64          `json:"arrived"`
 	Received         int64          `json:"received"`
 	Propagation      int64          `json:"propagation"`
-	Time             int64          `json:"time"`
+	Time             int64          `json:"time"` // Time since last block (ms)
 	Fork             int            `json:"fork"`
 }
 
@@ -562,16 +562,24 @@ func (bc *Blockchain) Chart() *Chart {
 	return chart
 }
 
-func (bc *Blockchain) AvgBlockTime() int64 {
+// AvgBlockTime returns the average block time in seconds.
+func (bc *Blockchain) AvgBlockTime() float64 {
 	if len(bc.blocks) == 0 {
 		return 0
 	}
 
-	var sum int64
+	var sum, cnt int64
 	for _, b := range bc.blocks {
+		if b.Time == 0 {
+			continue
+		}
 		sum += b.Time
+		cnt++
 	}
-	return sum / int64(len(bc.blocks)) / 1000
+	if sum == 0 || cnt == 0 {
+		return 0
+	}
+	return float64(sum) / float64(cnt) / 1000
 }
 
 func (bc *Blockchain) MinersCount() []*ChartMiner {
@@ -595,7 +603,7 @@ func (bc *Blockchain) MinersCount() []*ChartMiner {
 type Chart struct {
 	Height             []int         `json:"height"`
 	BlockTime          []float64     `json:"blocktime"`
-	AvgBlockTime       int64         `json:"avgBlocktime"`
+	AvgBlockTime       float64       `json:"avgBlocktime"` // Average block time (s)
 	Difficulty         []string      `json:"difficulty"`
 	Uncles             []int         `json:"uncles"`
 	Transactions       []int         `json:"transactions"`
