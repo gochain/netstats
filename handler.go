@@ -447,7 +447,9 @@ func (h *Handler) handlePrimusIncoming(conn *Conn, ready chan struct{}) {
 		}
 
 		var msg Message
-		if err := json.Unmarshal(buf, &msg); err != nil {
+		d := json.NewDecoder(bytes.NewReader(buf))
+		d.UseNumber()
+		if err := d.Decode(&msg); err != nil {
 			log.Printf("[primus] cannot unmarshal: %s", buf)
 			continue
 		}
@@ -463,9 +465,14 @@ func (h *Handler) handlePrimusIncoming(conn *Conn, ready chan struct{}) {
 				}
 			case "client-pong":
 				if len(msg.Emit) > 1 {
-					prevServerTime, _ := msg.Emit[1].(int)
-					if err := emit(conn, "client-latency", ClientLatencyMessageData{Latency: (h.DB.Now() - int64(prevServerTime)) / 2}); err != nil {
-						log.Printf("[api] node-pong emit error: %s", err)
+					data := msg.Emit[1].(map[string]interface{})
+					prevServerTime, err := data["serverTime"].(json.Number).Int64()
+					if err != nil {
+						log.Printf("[api] node-pong error: %s\n", err)
+					}
+					latency := ClientLatencyMessageData{Latency: (h.DB.Now() - prevServerTime) / 2}
+					if err := emit(conn, "client-latency", latency); err != nil {
+						log.Printf("[api] node-pong emit error: %s\n", err)
 						return
 					}
 				}

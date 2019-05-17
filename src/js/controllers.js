@@ -13,7 +13,7 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 	$scope.nodesActive = 0;
 	$scope.bestBlock = 0;
 	$scope.lastBlock = 0;
-	$scope.lastDifficulty = 0;
+	$scope.lastTotalDifficulty = 0;
 	$scope.upTimeTotal = 0;
 	$scope.avgBlockTime = 0;
 	$scope.blockPropagationAvg = 0;
@@ -576,7 +576,7 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 				}).stats;
 
 				$scope.lastBlock = $scope.bestStats.block.arrived;
-				$scope.lastDifficulty = $scope.bestStats.block.difficulty;
+				$scope.lastTotalDifficulty = $scope.bestStats.block.totalDifficulty;
 			}
 		}
 	}

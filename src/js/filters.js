@@ -26,11 +26,6 @@ angular.module('netStatsApp.filters', [])
 	  	return 'icon-loader';
 	};
 })
-.filter('mainClass', function() {
-	return function(node, bestBlock) {
-	  	return mainClass(node, bestBlock);
-	};
-})
 .filter('peerClass', function() {
 	return function(peers, active) {
 		return peerClass(peers, active);
@@ -44,113 +39,13 @@ angular.module('netStatsApp.filters', [])
 		return (! mining ? 'text-danger' : 'text-success');
 	};
 })
-.filter('miningIconClass', function() {
-	return function(mining) {
-		return (! mining ? 'icon-cancel' : 'icon-check');
-	};
-})
 .filter('hashrateClass', function() {
 	return function(mining, active) {
+		var icon = mining ? 'icon-check' : 'icon-cancel';
 		if(! mining || ! active)
-			return 'text-gray';
+			return 'text-gray ' + icon;
 
-		return 'text-success';
-	};
-})
-.filter('hashrateFilter', ['$sce', '$filter', function($sce, filter) {
-	return function(hashes, isMining) {
-		var result = 0;
-		var unit = 'K';
-
-		if( !isMining )
-			return $sce.trustAsHtml('<i class="icon-cancel"></i>');
-
-		if(hashes !== 0 && hashes < 1000) {
-			result = hashes;
-			unit = '';
-		}
-
-		if(hashes >= 1000 && hashes < Math.pow(1000, 2)) {
-			result = hashes / 1000;
-			unit = 'K';
-		}
-
-		if(hashes >= Math.pow(1000, 2) && hashes < Math.pow(1000, 3)) {
-			result = hashes / Math.pow(1000, 2);
-			unit = 'M';
-		}
-
-		if(hashes >= Math.pow(1000, 3) && hashes < Math.pow(1000, 4)) {
-			result = hashes / Math.pow(1000, 3);
-			unit = 'G';
-		}
-
-		if(hashes >= Math.pow(1000, 4) && hashes < Math.pow(1000, 5)) {
-			result = hashes / Math.pow(1000, 4);
-			unit = 'T';
-		}
-
-		return $sce.trustAsHtml('<span class="small">' + filter('number')(result.toFixed(1)) + ' <span class="small-hash">' + unit + 'H/s</span></span>');
-	};
-}])
-.filter('totalDifficultyFilter', function() {
-	return function(hashes) {
-		var result = 0;
-		var unit = '';
-
-		if(hashes !== 0 && hashes < 1000) {
-			result = hashes;
-			unit = '';
-		}
-
-		if(hashes >= 1000 && hashes < Math.pow(1000, 2)) {
-			result = hashes / 1000;
-			unit = 'K';
-		}
-
-		if(hashes >= Math.pow(1000, 2) && hashes < Math.pow(1000, 3)) {
-			result = hashes / Math.pow(1000, 2);
-			unit = 'M';
-		}
-
-		if(hashes >= Math.pow(1000, 3) && hashes < Math.pow(1000, 4)) {
-			result = hashes / Math.pow(1000, 3);
-			unit = 'G';
-		}
-
-		if(hashes >= Math.pow(1000, 4) && hashes < Math.pow(1000, 5)) {
-			result = hashes / Math.pow(1000, 4);
-			unit = 'T';
-		}
-
-		return result.toFixed(2) + ' ' + unit + 'H';
-	};
-})
-.filter('nodeVersion', function($sce) {
-	return function(version) {
-		if(version)
-		{
-			var tmp = version.split('/');
-
-			if(tmp[1] && tmp[1][0] !== 'v' && tmp[1][2] !== '.')
-			{
-				tmp.splice(1,1);
-			}
-
-			if(tmp[2] && tmp[2] === 'Release'){
-				tmp.splice(2,1);
-			}
-
-			if(tmp[2] && tmp[2].indexOf('Linux') === 0)
-				tmp[2] = 'linux';
-
-			if(tmp[2] && tmp[2].indexOf('Darwin') === 0)
-				tmp[2] = 'darwin';
-
-			return $sce.trustAsHtml(tmp.join('/'));
-		}
-
-		return '';
+		return 'text-success ' + icon;
 	};
 })
 .filter('blockClass', function() {
@@ -315,45 +210,6 @@ angular.module('netStatsApp.filters', [])
 		return moment.duration(Math.round(diff), 's').humanize() + ' ago';
 	};
 })
-.filter('networkHashrateFilter', ['$sce', '$filter', function($sce, filter) {
-	return function(hashes, isMining) {
-		if(hashes === null)
-			hashes = 0;
-
-		var result = 0;
-		var unit = 'K';
-
-		if(hashes !== 0 && hashes < 1000) {
-			result = hashes;
-			unit = '';
-		}
-
-		if(hashes >= 1000 && hashes < Math.pow(1000, 2)) {
-			result = hashes / 1000;
-			unit = 'K';
-		}
-
-		if(hashes >= Math.pow(1000, 2) && hashes < Math.pow(1000, 3)) {
-			result = hashes / Math.pow(1000, 2);
-			unit = 'M';
-		}
-
-		if(hashes >= Math.pow(1000, 3) && hashes < Math.pow(1000, 4)) {
-			result = hashes / Math.pow(1000, 3);
-			unit = 'G';
-		}
-
-		if(hashes >= Math.pow(1000, 4) && hashes < Math.pow(1000, 5)) {
-			result = hashes / Math.pow(1000, 4);
-			unit = 'T';
-		}
-
-		if( !isMining )
-			return $sce.trustAsHtml(filter('number')(result.toFixed(1)) + ' <span class="small-hash">' + unit + 'H/s</span>');
-
-		return $sce.trustAsHtml('? <span class="small-hash">' + unit + 'KH/s</span>');
-	};
-}])
 .filter('transactionRateFilter', ['$sce', '$filter', function ($sce, filter) {
 	return function (rate) {
 		if (rate === null)
@@ -578,17 +434,6 @@ angular.module('netStatsApp.filters', [])
 			return prefix + 'warning';
 
 		return prefix + 'danger';
-	};
-})
-.filter('nodeClientClass', function() {
-	return function(info, current) {
-		if(typeof info === 'undefined' || typeof info.client === 'undefined' || typeof info.client === '')
-			return 'text-danger';
-
-		if(compareVersions(info.client, '<', current))
-			return 'text-danger';
-
-		return 'hidden';
 	};
 })
 .filter('consensusClass', function() {
