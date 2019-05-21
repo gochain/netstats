@@ -4,7 +4,6 @@ html {
 
 body {
 	width: 100%;
-	min-width: 1000px;
 	font-smooth: auto;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -81,22 +80,19 @@ table td {
 
 .stat-holder {
 	background: #090909;
-	border: 1px solid rgba(255,255,255,0.05);
+	border: 1px solid #171717;
 }
 
-.big-info {
-	padding-top: 15px;
-	padding-bottom: 15px;
+.big-info>div {
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 .big-info .icon-full-width i {
 	display: block;
-	width: 85px;
-	height: 70px;
-	font-size: 70px;
-	line-height: 70px;
-	margin-right: 15px;
-	margin-left: -15px;
+	height: 60px;
+	font-size: 60px;
+	margin-left:-10px;
 }
 
 .big-info span.small-title,
@@ -125,22 +121,11 @@ span.small-title span.small {
 }
 
 .big-info .big-details {
-	display: block;
-	font-weight: 200;
-	font-size: 50px;
-	line-height: 55px;
-	letter-spacing: -4px;
-	word-spacing: nowrap !important;
+	font-size: 30px;
 }
 
 .big-info .big-details .small-hash {
 	font-size: 87%;
-}
-
-.big-info .big-details-holder {
-	position: absolute;
-	top: 15px;
-	left: 99px;
 }
 
 .big-info.chart {
@@ -155,7 +140,7 @@ span.small-title span.small {
 
 .big-info.chart {
 	height: 120px;
-	-webkit-box-sizing: border-box
+	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 }
 
@@ -233,7 +218,6 @@ span.small-title span.small {
 }
 
 .small-value {
-	font-weight: 300;
 	-webkit-font-smoothing: subpixel-antialiased;
 	-moz-osx-font-smoothing: auto;
 	float: right;
@@ -248,34 +232,34 @@ span.small-title span.small {
 	top: 10px;
 }
 
-table i {
+.nodeTable i {
 	-webkit-font-smoothing: subpixel-antialiased;
 	-moz-osx-font-smoothing: auto;
 }
 
-table th,
-table td {
+.nodeHeader, .nodeCell {
 	border-color: #222 !important;
 }
 
-table td {
+.nodeCell {
 	line-height: 18px !important;
+	text-overflow: ellipsis;
 }
 
-table th {
+.nodeHeader, .nodeCellLabel {
 	color: #888;
 }
 
-table th i {
+.nodeHeader i {
 	line-height: 1em;
-	font-size: 20px;
+	font-size: 25px;
 }
-table td i {
+.nodeCell i {
 	position: relative;
 	top: 2px;
 	left: 2px;
 }
-table td.peerPropagationChart {
+.nodeCell.peerPropagationChart {
 	padding: 4px 5px !important;
 }
 nodepropagchart {
@@ -285,48 +269,8 @@ nodepropagchart {
 	vertical-align: top;
 }
 
-.table>tbody>tr>td,
-.table>thead>tr>th {
+.nodeCell, .nodeHeader {
 	padding: 5px;
-}
-
-.th-nodecheck,
-.td-nodecheck {
-	width: 38px;
-	text-align: center;
-}
-
-.td-nodecheck i {
-	left: 0px;
-}
-
-.th-nodename {
-	width: 300px;
-	text-overflow: ellipsis;
-}
-
-.th-nodetype {
-	width: 220px;
-}
-
-.th-latency {
-	width: 100px;
-}
-
-.th-blockhash {
-	width: 150px;
-}
-
-.th-blocktime {
-	width: 110px;
-}
-
-.th-peerPropagationTime {
-	width: 120px;
-}
-
-.th-peerPropagationChart {
-	width: 140px;
 }
 
 .nodeInfo .tooltip .tooltip-inner {
@@ -363,7 +307,6 @@ nodepropagchart {
 	padding: 5px 0;
 	width: auto;
 	left: -50%;
-	word-wrap: wrap;
 	text-align: center;
 }
 
@@ -439,7 +382,7 @@ svg .line {
 	stroke-width: 1.3px;
 	stroke-linejoin: round;
 	stroke-linecap: round;
-	shape-rendering: geometric-precision;
+	shape-rendering: geometricPrecision;
 	/*-webkit-svg-shadow: 0 0 7px #fff;*/
 }
 
@@ -466,4 +409,99 @@ svg .axis text {
 
 svg .y.axis .tick:first-child text {
 	opacity: 0;
+}
+
+.nodeTable {
+	display: table;
+	border-collapse: collapse;
+	border: 1px solid #171717;
+}
+.nodeHeaders {
+	display: table-header-group;
+}
+.nodeRow {
+	display: table-row;
+}
+.nodeHeader {
+	display: table-cell;
+	text-align:center;
+}
+.nodeBody {
+	display: table-row-group;
+}
+.nodeBody>.nodeRow:nth-child(odd) {
+	background: #090909;
+}
+.nodeCell {
+	display: table-cell;
+	text-align:center;
+}
+.nodeCellLabel {
+	display: none;
+}
+
+@media only screen and (max-width: 1200px) {
+	.big-info .big-details {
+		font-size: 25px;
+	}
+
+	.big-info .icon-full-width i {
+		height: 50px;
+		font-size: 50px;
+	}
+
+	.second-row .box {
+		height: unset;
+	}
+}
+
+@media only screen and (max-width: 992px) {
+	.nodeTable {
+		display: block;
+	}
+	.nodeHeaders {
+		display: block;
+	}
+	.nodeHeaders>.nodeRow {
+		display: block;
+	}
+	.nodeHeader {
+		display: block;
+		float: left;
+		text-align: unset;
+	}
+	.nodeBody {
+		display: block;
+	}
+	.nodeBody>.nodeRow {
+		display: flex;
+		flex-flow: wrap;
+	}
+	.nodeRow {
+		padding: 1em;
+	}
+	.nodeCell {
+		display: block;
+		float: left;
+		text-align: unset;
+	}
+	.nodeCellLabel {
+		display: unset;
+	}
+
+	.big-info>div {
+		margin-top: 5px;
+		margin-bottom: 5px;
+	}
+}
+
+@media only screen and (max-width: 768px) {
+	.big-info .big-details {
+		font-size: unset;
+	}
+
+	.big-info .icon-full-width i {
+		height: 40px;
+		font-size: 40px;
+	}
 }
