@@ -43,7 +43,7 @@ func run(args []string) error {
 	}
 
 	// Setup database.
-	db := netstats.NewDB()
+	db := netstats.NewDB(os.Getenv("NETWORK_NAME"))
 
 	// Read secret from environment variable, if blank.
 	if *apiSecret == "" {

@@ -10,6 +10,8 @@ import (
 )
 
 type DB struct {
+	networkName string
+
 	mu    sync.RWMutex
 	nodes map[string]*Node // items -- was array
 
@@ -31,8 +33,9 @@ type DB struct {
 	Now func() int64
 }
 
-func NewDB() *DB {
+func NewDB(networkName string) *DB {
 	db := &DB{
+		networkName:  networkName,
 		nodes:        make(map[string]*Node),
 		blocks:       make(map[string]*Block),
 		propagations: make(map[string][]*Propagation),
@@ -376,6 +379,7 @@ func (db *DB) addBlockPropagation(ctx context.Context, hash, nodeID string, rece
 
 func (db *DB) bestBlockchain() *Blockchain {
 	bc := NewBlockchain()
+	bc.networkName = db.networkName
 	for block := db.bestBlock(); block != nil && bc.Len() <= MaxHistory; block = db.blocks[block.ParentHash] {
 		bc.blocks = append([]*Block{block}, bc.blocks...)
 		bc.propagations = append([][]*Propagation{db.propagations[block.Hash]}, bc.propagations...)

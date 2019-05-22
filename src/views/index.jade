@@ -3,6 +3,16 @@ extends ./layout.jade
 
 block content
   div.container-fluid(ng-controller='StatsCtrl')
+    div.row
+      div.col-xs-3.col-sm-3.col-md-4.col-lg-4
+        image.logo(src="images/logo_allwhite.svg")
+      div.title.col-xs-9.col-sm-9.col-md-8.col-lg-8
+        div.titleText
+          strong.text-info GoChain Network Status:&nbsp;
+          strong.text-orange(ng-cloak) {{ networkName }}
+        div.disclaimer
+          em This does not represent the entire network and information may not be 100% accurate.
+
     div.row(ng-cloak)
       div.col-xs-12.col-sm-6.col-md-3.col-lg-3.stat-holder
         div.big-info.bestblock.text-info
@@ -108,16 +118,6 @@ block content
             div.big-info.chart.xdouble-chart(class="{{ blockPropagationAvg | propagationAvgTimeClass : true }}")
               span.small-title block propagation
               histogram.big-details.d3-blockpropagation(data="blockPropagationChart")
-
-
-    div.row
-      div.col-xs-12.stats-boxes
-        div.row.second-row
-          div.col-xs-12.stat-holder.active-nodes.text-warning
-            span.small-value
-              i.icon-warning-o
-              span.small-title ATTENTION!
-              span This does not represent the entire GoChain network and information may not be 100% accurate.
 
     div.row(ng-cloak, style="padding-top: 10px")
       .nodeTable.table.table-striped.table-hover
