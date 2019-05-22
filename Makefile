@@ -9,9 +9,7 @@ run:
 release: docker
 	./release.sh
 
-generate: assets/assets.gen.go
-
-assets/assets.gen.go: $(shell find dist/ -type f)
-	cd dist && genesis -pkg assets -o ../assets/assets.gen.go index.html favicon.ico css fonts js
+generate:
+	cd dist && genesis -pkg assets -o ../assets/assets.gen.go index.html css fonts images js
 
 .PHONY: default generate test build docker release run

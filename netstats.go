@@ -381,6 +381,7 @@ func (u *Uptime) Clone() *Uptime {
 }
 
 type Blockchain struct {
+	networkName  string
 	blocks       []*Block
 	propagations [][]*Propagation
 }
@@ -517,6 +518,7 @@ func (bc *Blockchain) AvgBlockPropagation() int64 {
 
 func (bc *Blockchain) Chart() *Chart {
 	chart := NewChart()
+	chart.NetworkName = bc.networkName
 	if len(bc.blocks) == 0 {
 		return chart
 	}
@@ -601,6 +603,7 @@ func (bc *Blockchain) MinersCount() []*ChartMiner {
 }
 
 type Chart struct {
+	NetworkName        string        `json:"networkName"`
 	Height             []int         `json:"height"`
 	BlockTime          []float64     `json:"blocktime"`
 	AvgBlockTime       float64       `json:"avgBlocktime"` // Average block time (s)

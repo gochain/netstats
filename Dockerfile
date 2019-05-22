@@ -11,6 +11,7 @@ RUN cd /usr/local/bin \
 
 ADD . /src/netstats
 RUN cd /src/netstats && npm install && grunt && grunt build
+RUN cd /src/netstats && make generate
 RUN cd /src/netstats && make && go build -o /tmp/netstats ./cmd/netstats
 
 
