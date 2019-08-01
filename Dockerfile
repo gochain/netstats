@@ -10,10 +10,12 @@ RUN cd /usr/local/bin \
 	&& tar zxvf genesis-v0.2.1-linux-amd64.tar.gz
 
 ADD . /src/netstats
-RUN cd /src/netstats && npm install && grunt && grunt build
-RUN cd /src/netstats && make generate
-RUN cd /src/netstats && make && go build -o /tmp/netstats ./cmd/netstats
-
+WORKDIR /src/netstats
+RUN npm install && grunt && grunt build
+RUN make
+ARG GOTEST
+RUN if [ "$GOTEST" = "true" ] ; then go test ./...; fi
+RUN go build -o /tmp/netstats ./cmd/netstats
 
 # Pull all binaries into a second stage deploy alpine container
 FROM alpine:latest
