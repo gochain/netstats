@@ -2,6 +2,7 @@ package netstats
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"math/rand"
 	"sort"
@@ -24,7 +25,9 @@ type DB struct {
 	chartNotify chan struct{} // notify clients of new chart
 
 	// Set of geolocations for trusted IPs. Must be set before using DB.
-	GeoByIP map[string]*Geo
+	Trusted GeoByIP
+	// If true, only allow trusted IPs.
+	Strict bool
 
 	// Geolocation service used for IPs not in GeoByIP.
 	GeoService GeoService
@@ -32,6 +35,8 @@ type DB struct {
 	// Now returns the current time, in milliseconds.
 	Now func() int64
 }
+
+type GeoByIP map[string]*Geo
 
 func NewDB(networkName string) *DB {
 	db := &DB{
@@ -44,7 +49,7 @@ func NewDB(networkName string) *DB {
 
 		chartNotify: make(chan struct{}),
 
-		GeoByIP:    make(map[string]*Geo),
+		Trusted:    make(GeoByIP),
 		GeoService: &NopGeoService{},
 
 		Now: func() int64 { return int64(time.Now().UnixNano() / int64(time.Millisecond)) },
@@ -137,16 +142,20 @@ func (db *DB) CreateNodeIfNotExists(ctx context.Context, node *Node) error {
 		node.Geo = &Geo{LL: []float64{0, 0}}
 	}
 	if node.Info != nil && node.Info.IP != "" {
-		if geo := db.GeoByIP[node.Info.IP]; geo != nil {
+		if geo := db.Trusted[node.Info.IP]; geo != nil {
 			node.Trusted = true
 			node.Geo = geo.Clone()
 			log.Printf("Node %q is a trusted node: %#v", node.Info.IP, node.Geo)
+		} else if db.Strict {
+			return fmt.Errorf("untrusted IP: %s", node.Info.IP)
 		} else if geo, err := db.GeoService.GeoByIP(context.Background(), node.Info.IP); err != nil {
 			log.Printf("Cannot find geolocation by ip: %s", node.Info.IP)
 		} else if geo != nil {
 			node.Geo = geo.Clone()
 			log.Printf("Node %q is an unknown node: %#v", node.Info.IP, node.Geo)
 		}
+	} else if db.Strict {
+		return fmt.Errorf("unknown node: %#v", node.Info)
 	}
 
 	// If node already exists, simply mark it as active.

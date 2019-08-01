@@ -36,7 +36,8 @@ func run(args []string) error {
 	fs := flag.NewFlagSet("netstats", flag.ContinueOnError)
 	addr := fs.String("addr", defaultAddr, "bind address")
 	apiSecret := fs.String("api-secret", "", "api secret")
-	trusted := fs.String("trusted", "", "trusted geo path")
+	trustedF := fs.String("trusted", "", "trusted geo path")
+	strict := fs.Bool("strict", false, "enable strict mode to only allow trusted IPs")
 	geoDBPath := fs.String("geodb", "", "MaxMind-City geo db path")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -51,7 +52,7 @@ func run(args []string) error {
 	}
 
 	// Read trusted nodes set.
-	geoByIP, err := readTrustedFile(*trusted)
+	trusted, err := readTrustedFile(*trustedF)
 	if err != nil {
 		return err
 	}
@@ -70,12 +71,13 @@ func run(args []string) error {
 
 	h := netstats.NewHandler()
 	h.DB = db
-	h.DB.GeoByIP = geoByIP
+	h.DB.Trusted = trusted
+	h.DB.Strict = *strict
 	h.APISecrets = strings.Split(*apiSecret, ",")
 	return http.ListenAndServe(*addr, h)
 }
 
-func readTrustedFile(path string) (map[string]*netstats.Geo, error) {
+func readTrustedFile(path string) (netstats.GeoByIP, error) {
 	useDefault := path == ""
 	if useDefault {
 		path = DefaultTrustedPath
