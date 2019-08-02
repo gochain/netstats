@@ -16,7 +16,7 @@ func TestHandler(t *testing.T) {
 		s := NewServer()
 		defer s.Close()
 
-		s.DB.GeoByIP = map[string]*netstats.Geo{
+		s.DB.Trusted = netstats.GeoByIP{
 			"127.0.0.1": &netstats.Geo{
 				Range:   []int{1, 2},
 				Country: "US",
