@@ -153,9 +153,6 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 					if( _.isUndefined(node.stats.hashrate) )
 						node.stats.hashrate = 0;
 
-					// Init latency
-					latencyFilter(node);
-
 					// Init history
 					if( _.isUndefined(data.history) )
 					{
@@ -218,8 +215,6 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 					if( !_.isUndefined(data.stats.latency) && _.get($scope.nodes[index], 'stats.latency', 0) !== data.stats.latency )
 					{
 						$scope.nodes[index].stats.latency = data.stats.latency;
-
-						latencyFilter($scope.nodes[index]);
 					}
 
 					updateBestBlock();
@@ -287,8 +282,6 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 						if( !_.isUndefined(data.stats.latency) && _.get($scope.nodes[index], 'stats.latency', 0) !== data.stats.latency )
 						{
 							$scope.nodes[index].stats.latency = data.stats.latency;
-
-							latencyFilter($scope.nodes[index]);
 						}
 
 						updateActiveNodes();
@@ -306,9 +299,6 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 
 					if( _.isUndefined($scope.nodes[index].pinned) )
 						$scope.nodes[index].pinned = false;
-
-					// Init latency
-					latencyFilter($scope.nodes[index]);
 
 					updateActiveNodes();
 				}
@@ -404,7 +394,6 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 						if( !_.isUndefined(node) && !_.isUndefined(node.stats) && !_.isUndefined(node.stats.latency) && node.stats.latency !== data.latency )
 						{
 							node.stats.latency = data.latency;
-							latencyFilter(node);
 						}
 					}
 				}
@@ -618,36 +607,6 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 	// 		return false;
 	// 	}
 	// }
-
-	function latencyFilter(node)
-	{
-		if( _.isUndefined(node.readable) )
-			node.readable = {};
-
-		if( _.isUndefined(node.stats) ) {
-			node.readable.latencyClass = 'text-danger';
-			node.readable.latency = 'offline';
-		}
-
-		if (node.stats.active === false)
-		{
-			node.readable.latencyClass = 'text-danger';
-			node.readable.latency = 'offline';
-		}
-		else
-		{
-			if (node.stats.latency <= 100)
-				node.readable.latencyClass = 'text-success';
-
-			if (node.stats.latency > 100 && node.stats.latency <= 1000)
-				node.readable.latencyClass = 'text-warning';
-
-			if (node.stats.latency > 1000)
-				node.readable.latencyClass = 'text-danger';
-
-			node.readable.latency = node.stats.latency + ' ms';
-		}
-	}
 
 	// very simple xss filter
 	function xssFilter(obj){

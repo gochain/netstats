@@ -9,8 +9,14 @@ RUN cd /usr/local/bin \
 	&& wget https://github.com/benbjohnson/genesis/releases/download/v0.2.1/genesis-v0.2.1-linux-amd64.tar.gz && ls \
 	&& tar zxvf genesis-v0.2.1-linux-amd64.tar.gz
 
-ADD . /src/netstats
-WORKDIR /src/netstats
+ENV D=/src/netstats
+WORKDIR $D
+# cache dependencies
+ADD go.mod $D
+ADD go.sum $D
+RUN go mod download
+# build
+ADD . $D
 RUN npm install && grunt && grunt build
 RUN make
 RUN go build -o /tmp/netstats ./cmd/netstats

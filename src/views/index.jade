@@ -130,9 +130,9 @@ block content
             .nodeHeader
               i.icon-laptop(data-toggle="tooltip", data-placement="top", title="Node type", ng-click="orderTable(['info.node'], false)")
             .nodeHeader
-              i.icon-clock(data-toggle="tooltip", data-placement="top", title="Node latency", ng-click="orderTable(['stats.latency'], false)")
+              i.icon-clock(data-toggle="tooltip", data-placement="top", title="Node latency", ng-click="orderTable(['-stats.latency'], false)")
             .nodeHeader
-              i.icon-database(data-toggle="tooltip", data-placement="top", title="Is signing", ng-click="orderTable(['-stats.hashrate'], false)")
+              i.icon-database(data-toggle="tooltip", data-placement="top", title="Is signing", ng-click="orderTable(['stats.mining'], false)")
             .nodeHeader
               i.icon-group(data-toggle="tooltip", data-placement="top", title="Peers", ng-click="orderTable(['-stats.peers'], false)")
             .nodeHeader
@@ -140,15 +140,21 @@ block content
             .nodeHeader
               i.icon-check-o(data-toggle="tooltip", data-placement="top", title="Block transactions", ng-click="orderTable(['-stats.block.transactions.length'], false)")
             .nodeHeader
-              i.icon-time(data-toggle="tooltip", data-placement="top", title="Last block time", ng-click="orderTable(['-stats.block.received'], false)")
+              i.icon-clock(data-toggle="tooltip", data-placement="top", title="Last block time", ng-click="orderTable(['-stats.block.received'], false)")
             .nodeHeader
-              i.icon-block(data-toggle="tooltip", data-placement="top", title="Last block", ng-click="orderTable(['-stats.block.number', 'stats.block.propagation'], false)")
+              i.icon-check(data-toggle="tooltip", data-placement="top", title="Last block number", ng-click="orderTable(['-stats.block.number', 'stats.block.propagation'], false)")
             .nodeHeader
+              i.icon-block(data-toggle="tooltip", data-placement="top", title="Last block hash", ng-click="orderTable(['stats.block.hash'], false)")
+            .nodeHeader
+              i.icon-time(data-toggle="tooltip", data-placement="top", title="Propagation time", ng-click="orderTable(['-stats.block.number', 'stats.block.propagation'], false)")
+            .nodeHeader.nodeHeader
               i.icon-gas(data-toggle="tooltip", data-placement="top", title="Average propagation time", ng-click="orderTable(['stats.propagationAvg'], false)")
             .nodeHeader
-              i.icon-gas(data-toggle="tooltip", data-placement="top", title="Propagation time", ng-click="orderTable(['-stats.block.number', 'stats.block.propagation'], false)")
+              i.icon-clock(data-toggle="tooltip", data-placement="top", title="Propagation history", ng-click="orderTable(['stats.propagationAvg'], false)")
             .nodeHeader
               i.icon-bulb(data-toggle="tooltip", data-placement="top", title="Up-time", ng-click="orderTable(['-stats.uptime'], false)")
+
+
             div.clearfix
         .nodeBody(ng-cloak)
           .nodeRow(ng-repeat='node in nodes | orderBy:predicate track by node.id', id="node_{{node.id}}")
@@ -159,9 +165,9 @@ block content
             .nodeCell.text-info
               span.nodeCellLabel Version:&nbsp;
               span.small {{ node.info.node }}
-            .nodeCell(class="{{ node.readable.latencyClass }}")
+            .nodeCell(class="{{ node.stats.latency | latencyCellClass : node.stats.active }}")
               span.nodeCellLabel Latency:&nbsp;
-              span.small {{ node.readable.latency }}
+              span.small {{ node.stats.latency | latencyCellFilter : node.stats.active }}
             .nodeCell
               span.nodeCellLabel Signing:&nbsp;
               i(class="{{ node.stats.mining | hashrateClass : node.stats.active }}")
