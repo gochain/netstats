@@ -4,7 +4,8 @@ docker:
 	docker build -t gcr.io/gochain-core/netstats:latest .
 
 docker-test:
-	docker build --build-arg GOTEST=true -t gcr.io/gochain-core/netstats:latest .
+	docker build --target builder -t gochain/netstats-builder .
+	docker run gochain/netstats-builder go test ./...
 
 run:
 	docker run --rm -it -p 3000:3000 -e WS_SECRET=$(WS_SECRET) gcr.io/gochain-core/netstats
