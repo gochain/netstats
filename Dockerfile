@@ -13,8 +13,6 @@ ADD . /src/netstats
 WORKDIR /src/netstats
 RUN npm install && grunt && grunt build
 RUN make
-ARG GOTEST
-RUN if [ "$GOTEST" = "true" ] ; then go test ./...; fi
 RUN go build -o /tmp/netstats ./cmd/netstats
 
 # Pull all binaries into a second stage deploy alpine container
