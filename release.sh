@@ -34,7 +34,7 @@ docker push $user/$image:$version
 docker push $user/$image:latest
 
 # Push GCR docker images
-echo $GOOGLE_AUTH | gcloud auth activate-service-account --key-file=-
+echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
 docker tag $user/$image:latest gcr.io/$gcr_project/$image:latest
 docker tag $user/$image:latest gcr.io/$gcr_project/$image:$version
 docker push gcr.io/$gcr_project/$image:latest
