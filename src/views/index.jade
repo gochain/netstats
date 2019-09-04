@@ -147,14 +147,12 @@ block content
               i.icon-block(data-toggle="tooltip", data-placement="top", title="Last block hash", ng-click="orderTable(['stats.block.hash'], false)")
             .nodeHeader
               i.icon-time(data-toggle="tooltip", data-placement="top", title="Propagation time", ng-click="orderTable(['-stats.block.number', 'stats.block.propagation'], false)")
-            .nodeHeader.nodeHeader
+            .nodeHeader
               i.icon-gas(data-toggle="tooltip", data-placement="top", title="Average propagation time", ng-click="orderTable(['stats.propagationAvg'], false)")
             .nodeHeader
               i.icon-clock(data-toggle="tooltip", data-placement="top", title="Propagation history", ng-click="orderTable(['stats.propagationAvg'], false)")
             .nodeHeader
               i.icon-bulb(data-toggle="tooltip", data-placement="top", title="Up-time", ng-click="orderTable(['-stats.uptime'], false)")
-
-
             div.clearfix
         .nodeBody(ng-cloak)
           .nodeRow(ng-repeat='node in nodes | orderBy:predicate track by node.id', id="node_{{node.id}}")
