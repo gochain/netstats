@@ -35,6 +35,7 @@ docker push $user/$image:latest
 
 # Push GCR docker images
 echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
+gcloud --quiet auth configure-docker
 docker tag $user/$image:latest gcr.io/$gcr_project/$image:latest
 docker tag $user/$image:latest gcr.io/$gcr_project/$image:$version
 docker push gcr.io/$gcr_project/$image:latest
