@@ -6,6 +6,9 @@ import (
 	"math"
 	"sort"
 	"strconv"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var (
@@ -322,6 +325,17 @@ func (s *NopGeoService) GeoByIP(ctx context.Context, ip string) (*Geo, error) {
 	return nil, ErrIPNotFound
 }
 
+type GeoByIP map[string]*Geo
+
+func (gs GeoByIP) MarshalLogObject(oe zapcore.ObjectEncoder) error {
+	for ip, geo := range gs {
+		if err := oe.AddObject(ip, geo); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 type Geo struct {
 	City    string    `json:"city"`
 	Country string    `json:"country"`
@@ -330,6 +344,17 @@ type Geo struct {
 	Range   []int     `json:"range"`
 	Region  string    `json:"region"`
 	Zip     int       `json:"zip"`
+}
+
+func (g *Geo) MarshalLogObject(oe zapcore.ObjectEncoder) error {
+	oe.AddString("city", g.City)
+	oe.AddString("country", g.Country)
+	zap.Float64s("ll", g.LL).AddTo(oe)
+	zap.Int("metro", g.Metro)
+	zap.Ints("range", g.Range)
+	zap.String("region", g.Region)
+	zap.Int("zip", g.Zip)
+	return nil
 }
 
 // Clone returns a deep copy of g.

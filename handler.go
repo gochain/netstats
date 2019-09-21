@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gochain-io/netstats/assets"
+
 	"github.com/gorilla/websocket"
 	"github.com/tomasen/realip"
+	"go.uber.org/zap"
 )
 
 const (
@@ -20,6 +21,8 @@ const (
 )
 
 type Handler struct {
+	lgr *zap.Logger
+
 	mu         sync.RWMutex
 	conns      map[*Conn]struct{} // primus connections
 	fileServer http.Handler
@@ -32,8 +35,9 @@ type Handler struct {
 }
 
 // NewHandler returns a new instance of Handler.
-func NewHandler() *Handler {
+func NewHandler(lgr *zap.Logger) *Handler {
 	return &Handler{
+		lgr:        lgr,
 		conns:      make(map[*Conn]struct{}),
 		fileServer: assets.FileServer(),
 	}
@@ -64,7 +68,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleAPI(w http.ResponseWriter, r *http.Request) {
 	conn, err := h.upgrade(w, r)
 	if err != nil {
-		log.Print("upgrade:", err)
+		h.lgr.Error("API: upgrade failed", zap.Error(err))
 		return
 	}
 	defer conn.Close()
@@ -78,16 +82,16 @@ func (h *Handler) handleAPI(w http.ResponseWriter, r *http.Request) {
 		if nodeID == "" {
 			return
 		} else if err := h.DB.SetInactive(r.Context(), nodeID); err != nil {
-			log.Printf("[api] cannot set inactive: %s", err)
+			h.lgr.Error("API: failed to set inactive", zap.String("id", nodeID), zap.Error(err))
 			return
 		}
 
 		node, err := h.DB.FindNodeByID(r.Context(), nodeID)
 		if err != nil {
-			log.Printf("[api] cannot find node: %s", err)
+			h.lgr.Error("API: failed to find node", zap.String("id", nodeID), zap.Error(err))
 			return
 		}
-		h.publish(&PublishMessage{Action: "inactive", Data: node.Stats})
+		h.publish("inactive", node.Stats)
 	}()
 
 	for {
@@ -95,20 +99,20 @@ func (h *Handler) handleAPI(w http.ResponseWriter, r *http.Request) {
 		if _, buf, err := conn.ReadMessage(); IsUnexpectedCloseError(err) {
 			return
 		} else if err != nil {
-			log.Printf("[api] api read error: %s", err)
+			h.lgr.Error("API: failed to read message", zap.Error(err))
 			return
 		} else if err := json.Unmarshal(buf, &msg); err != nil {
-			log.Printf("[api] api unmarshal error: %s", err)
+			h.lgr.Error("API: failed to unmarshal message", zap.Error(err))
 			return
 		} else if len(msg.Emit) == 0 {
-			log.Printf("[api] empty emit, exiting: %s", buf)
+			h.lgr.Error("API: empty emit, exiting", zap.ByteString("buf", buf))
 			return
 		}
 
 		// End connection it has not been authorized yet.
 		var action string
 		if err := json.Unmarshal(msg.Emit[0], &action); err != nil {
-			log.Printf("[api] unmarshal emit[0] error: %s", err)
+			h.lgr.Error("API: failed to unmarshal action (emit[0])", zap.Error(err))
 			return
 		} else if action != "hello" && !authorized {
 			conn.WriteMessage(websocket.TextMessage, []byte(`{"reconnect":false}`))
@@ -121,11 +125,16 @@ func (h *Handler) handleAPI(w http.ResponseWriter, r *http.Request) {
 			dataBuf = []byte(msg.Emit[1])
 		}
 
+		lgr := h.lgr.With(zap.String("action", action))
+		if nodeID != "" {
+			lgr = lgr.With(zap.String("id", nodeID))
+		}
+
 		switch action {
 		case "hello":
 			var data HelloMessageData
 			if err := json.Unmarshal(dataBuf, &data); err != nil {
-				log.Printf("[api] cannot unmarshal hello data: %s", err)
+				lgr.Error("API: failed to unmarshal data", zap.Error(err))
 				return
 			} else if !h.IsValidAPISecret(data.Secret) {
 				conn.WriteMessage(websocket.TextMessage, []byte(`{"reconnect":false}`))
@@ -145,94 +154,94 @@ func (h *Handler) handleAPI(w http.ResponseWriter, r *http.Request) {
 			node.Stats.Latency = data.Latency
 
 			if err := h.DB.CreateNodeIfNotExists(r.Context(), node); err != nil {
-				log.Printf("[api] cannot add node: %s", err)
+				lgr.Error("API: failed to add node", zap.String("action", action), zap.Error(err))
 				return
 			}
 
 			node, err := h.DB.FindNodeByID(r.Context(), nodeID)
 			if err != nil {
-				log.Printf("[api] cannot find node: %s", err)
+				lgr.Error("API: failed to find node", zap.String("action", action), zap.Error(err))
 				return
 			}
 
-			h.publish(&PublishMessage{Action: "add", Data: node.Info})
+			h.publish("add", node.Info)
 
 			if err := conn.WriteMessage(websocket.TextMessage, []byte(`{"emit":["ready"]}`)); IsUnexpectedCloseError(err) {
 				return
 			} else if err != nil {
-				log.Printf("[api] cannot write hello emit-ready: %s", err)
+				lgr.Error("API: failed to emit ready", zap.String("action", action), zap.Error(err))
 				return
 			}
 
 		case "update":
 			var data UpdateMessageData
 			if err := json.Unmarshal(dataBuf, &data); err != nil {
-				log.Printf("[api] cannot unmarshal update data: %s", err)
+				lgr.Error("API: failed to unmarshal data", zap.ByteString("data", dataBuf), zap.Error(err))
 				return
 			} else if err := h.DB.AddBlock(r.Context(), nodeID, data.Stats.Block); err != nil {
-				log.Printf("[api] cannot update node: %s", err)
+				lgr.Error("API: failed to add block:", zap.Error(err))
 				return
 			}
 
 			node, err := h.DB.FindNodeByID(r.Context(), nodeID)
 			if err != nil {
-				log.Printf("[api] cannot find node: %s", err)
+				lgr.Error("API: failed to find node", zap.Error(err))
 				return
 			}
-			h.publish(&PublishMessage{Action: "update", Data: node.Info})
+			h.publish("update", node.Info)
 
 		case "block":
 			var data BlockMessageData
 			if err := json.Unmarshal(dataBuf, &data); err != nil {
-				log.Printf("[api] cannot unmarshal block data: %s", err)
+				lgr.Error("API: failed to unmarshal data", zap.ByteString("data", dataBuf), zap.Error(err))
 				return
 			} else if err := h.DB.AddBlock(r.Context(), nodeID, data.Block); err != nil {
-				log.Printf("[api] cannot update node: %s", err)
+				lgr.Error("API: failed to add block", zap.Error(err))
 				return
 			}
 
 			node, err := h.DB.FindNodeByID(r.Context(), nodeID)
 			if err != nil {
-				log.Printf("[api] cannot find node: %s", err)
+				lgr.Error("API: failed to find node", zap.Error(err))
 				return
 			}
-			h.publish(&PublishMessage{Action: "block", Data: map[string]interface{}{
+			h.publish("block", map[string]interface{}{
 				"id":             nodeID,
 				"block":          node.Stats.Block,
 				"history":        node.History,
 				"propagationAvg": node.Stats.PropagationAvg,
-			}})
+			})
 
 		case "pending":
 			var data PendingMessageData
 			if err := json.Unmarshal(dataBuf, &data); err != nil {
-				log.Printf("[api] cannot unmarshal pending data: %s", err)
+				lgr.Error("API: failed to unmarshal pending data", zap.ByteString("data", dataBuf), zap.Error(err))
 				return
 			} else if err := h.DB.UpdatePending(r.Context(), nodeID, data.Stats.Pending); err != nil {
-				log.Printf("[api] cannot update pending: %s", err)
+				lgr.Error("API: failed to update pending", zap.Error(err))
 				return
 			}
 
 			node, err := h.DB.FindNodeByID(r.Context(), nodeID)
 			if err != nil {
-				log.Printf("[api] cannot find node: %s", err)
+				lgr.Error("API: failed to find node", zap.Error(err))
 				return
 			}
-			h.publish(&PublishMessage{Action: "pending", Data: map[string]interface{}{"id": nodeID, "pending": node.Stats.Pending}})
+			h.publish("pending", map[string]interface{}{"id": nodeID, "pending": node.Stats.Pending})
 
 		case "stats":
 			var data StatsMessageData
 			if err := json.Unmarshal(dataBuf, &data); err != nil {
-				log.Printf("[api] cannot unmarshal stats data: %s", err)
+				lgr.Error("API: failed to unmarshal stats data", zap.ByteString("data", dataBuf), zap.Error(err))
 				return
 			} else if err := h.DB.UpdateStats(r.Context(), nodeID, data.Stats); err != nil {
-				log.Printf("[api] cannot update stats: %s", err)
+				lgr.Error("API: failed to update stats", zap.Error(err))
 				return
 			}
 
 			node, err := h.DB.FindNodeByID(r.Context(), nodeID)
 			if err != nil {
-				log.Printf("[api] cannot find node: %s", err)
+				lgr.Error("API: failed to find node", zap.Error(err))
 				return
 			}
 
@@ -246,46 +255,46 @@ func (h *Handler) handleAPI(w http.ResponseWriter, r *http.Request) {
 			stats.Uptime = node.Stats.Uptime
 			stats.Latency = node.Stats.Latency
 
-			h.publish(&PublishMessage{Action: "stats", Data: map[string]interface{}{"id": nodeID, "stats": stats}})
+			h.publish("stats", map[string]interface{}{"id": nodeID, "stats": stats})
 
 		case "history":
 			var data HistoryMessageData
 			if err := json.Unmarshal(dataBuf, &data); err != nil {
-				log.Printf("[api] cannot unmarshal history data: %s", err)
+				lgr.Error("API: failed to unmarshal history data", zap.ByteString("data", dataBuf), zap.Error(err))
 				return
 			}
 
 			if err := h.DB.AddBlocks(r.Context(), nodeID, data.History); err != nil {
-				log.Printf("[api] cannot add history: %s", err)
+				lgr.Error("API: failed to add blocks", zap.Error(err))
 				return
 			}
 
 			node, err := h.DB.FindNodeByID(r.Context(), nodeID)
 			if err != nil {
-				log.Printf("[api] cannot find node: %s", err)
+				lgr.Error("API: failed to find node", zap.Error(err))
 				return
 			}
-			h.publish(&PublishMessage{Action: "history", Data: node.History})
+			h.publish("history", node.History)
 
 		case "node-ping":
 			var data NodePingMessageData
 			if err := json.Unmarshal(dataBuf, &data); err != nil {
-				log.Printf("[api] cannot unmarshal node-ping data: %s", err)
+				lgr.Error("API: failed to unmarshal data", zap.ByteString("data", dataBuf), zap.Error(err))
 				return
 			}
 
 			if err := emit(conn, "node-pong", NodePongMessageData{}); err != nil {
-				log.Printf("[api] node-pong emit error: %s", err)
+				lgr.Error("API: failed to emit node-pong", zap.Error(err))
 				return
 			}
 
 		case "latency":
 			var data LatencyMessageData
 			if err := json.Unmarshal(dataBuf, &data); err != nil {
-				log.Printf("[api] cannot unmarshal latency data: %s", err)
+				lgr.Error("API: failed to unmarshal data", zap.ByteString("data", dataBuf), zap.Error(err))
 				return
 			} else if err := h.DB.UpdateLatency(r.Context(), nodeID, data.Latency); err != nil {
-				log.Printf("[api] update latency error: %s", err)
+				lgr.Error("API: failed to update latency", zap.Error(err))
 				return
 			}
 
@@ -305,13 +314,13 @@ func (h *Handler) handleAPI(w http.ResponseWriter, r *http.Request) {
 				}); IsUnexpectedCloseError(err) {
 					return
 				} else if err != nil {
-					log.Printf("[api] cannot write history emit: %s", err)
+					lgr.Error("API: failed to emit history request", zap.Error(err))
 					return
 				}
 			}
 
 		default:
-			log.Printf("[api] unknown action: %s", action)
+			lgr.Error("API: unknown action", zap.String("action", action))
 			return
 		}
 	}
@@ -321,7 +330,7 @@ func (h *Handler) handleAPI(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleExternal(w http.ResponseWriter, r *http.Request) {
 	conn, err := h.upgrade(w, r)
 	if err != nil {
-		log.Print("upgrade:", err)
+		h.lgr.Error("EXTERNAL: failed to upgrade", zap.Error(err))
 		return
 	}
 	defer conn.Close()
@@ -336,7 +345,7 @@ func (h *Handler) handleExternal(w http.ResponseWriter, r *http.Request) {
 			if err := conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf(`{"action":"lastBlock","number":%d}`, bestBlockNumber))); IsUnexpectedCloseError(err) {
 				continue
 			} else if err != nil {
-				log.Printf("[external] write error: %s", err)
+				h.lgr.Error("EXTERNAL: failed to write best block message", zap.Int("blockNumber", bestBlockNumber), zap.Error(err))
 				return
 			}
 
@@ -350,7 +359,7 @@ func (h *Handler) handleExternal(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handlePrimus(w http.ResponseWriter, r *http.Request) {
 	conn, err := h.upgrade(w, r)
 	if err != nil {
-		log.Print("upgrade:", err)
+		h.lgr.Error("PRIMUS: failed to upgrade", zap.Error(err))
 		return
 	}
 	defer conn.Close()
@@ -370,7 +379,7 @@ func (h *Handler) handlePrimus(w http.ResponseWriter, r *http.Request) {
 	// Fetch initial state of all nodes.
 	nodes, err := h.DB.Nodes(r.Context())
 	if err != nil {
-		log.Printf("[primus] fetch nodes error: %s", err)
+		h.lgr.Error("PRIMUS: failed to fetch nodes", zap.Error(err))
 		return
 	}
 
@@ -378,7 +387,7 @@ func (h *Handler) handlePrimus(w http.ResponseWriter, r *http.Request) {
 	if err := conn.WriteJSON(&Message{Emit: []interface{}{"init", map[string]interface{}{"nodes": nodes}}}); IsUnexpectedCloseError(err) {
 		return
 	} else if err != nil {
-		log.Printf("[primus] emit init error: %s", err)
+		h.lgr.Error("PRIMUS: failed to write init JSON", zap.Error(err))
 		return
 	}
 
@@ -403,7 +412,7 @@ func (h *Handler) handlePrimus(w http.ResponseWriter, r *http.Request) {
 			}); IsUnexpectedCloseError(err) {
 				return
 			} else if err != nil {
-				log.Printf("[primus] emit init error: %s", err)
+				h.lgr.Error("PRIMUS: failed to write JSON", zap.String("action", "client-ping"), zap.Error(err))
 				return
 			}
 		case <-chartNotify:
@@ -413,7 +422,7 @@ func (h *Handler) handlePrimus(w http.ResponseWriter, r *http.Request) {
 			}); IsUnexpectedCloseError(err) {
 				return
 			} else if err != nil {
-				log.Printf("[primus] emit chart error: %s", err)
+				h.lgr.Error("PRIMUS: failed to write JSON", zap.String("action", "charts"), zap.Error(err))
 				return
 			}
 			time.Sleep(1 * time.Second)
@@ -430,7 +439,7 @@ func (h *Handler) handlePrimusIncoming(conn *Conn, ready chan struct{}) {
 		if IsUnexpectedCloseError(err) {
 			return
 		} else if err != nil {
-			log.Printf("[primus] read error: %s", err)
+			h.lgr.Error("PRIMUS: failed to read message", zap.Error(err))
 			return
 		}
 
@@ -440,7 +449,7 @@ func (h *Handler) handlePrimusIncoming(conn *Conn, ready chan struct{}) {
 			if err := conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf(`"primus::pong::%s"`, timestamp))); IsUnexpectedCloseError(err) {
 				return
 			} else if err != nil {
-				log.Printf("[primus] pong error: %s", err)
+				h.lgr.Error("PRIMUS: failed to write pong message", zap.Error(err))
 				continue
 			}
 			continue
@@ -450,7 +459,7 @@ func (h *Handler) handlePrimusIncoming(conn *Conn, ready chan struct{}) {
 		d := json.NewDecoder(bytes.NewReader(buf))
 		d.UseNumber()
 		if err := d.Decode(&msg); err != nil {
-			log.Printf("[primus] cannot unmarshal: %s", buf)
+			h.lgr.Error("PRIMUS: failed to unmarshal message", zap.Error(err))
 			continue
 		}
 
@@ -468,16 +477,16 @@ func (h *Handler) handlePrimusIncoming(conn *Conn, ready chan struct{}) {
 					data := msg.Emit[1].(map[string]interface{})
 					prevServerTime, err := data["serverTime"].(json.Number).Int64()
 					if err != nil {
-						log.Printf("[api] node-pong error: %s\n", err)
+						h.lgr.Error("PRIMUS: invalid serverTime field", zap.String("action", "client-pong"), zap.Error(err))
 					}
 					latency := ClientLatencyMessageData{Latency: (h.DB.Now() - prevServerTime) / 2}
 					if err := emit(conn, "client-latency", latency); err != nil {
-						log.Printf("[api] node-pong emit error: %s\n", err)
+						h.lgr.Error("PRIMUS: failed to emit client-latency message", zap.Error(err))
 						return
 					}
 				}
 			default:
-				log.Printf("[primus] unknown emit action: %s", action)
+				h.lgr.Error("PRIMUS: unknown action", zap.String("action", action))
 			}
 			continue
 		}
@@ -527,10 +536,11 @@ func (h *Handler) unsubscribe(conn *Conn) {
 	delete(h.conns, conn)
 }
 
-func (h *Handler) publish(msg interface{}) {
+func (h *Handler) publish(action string, data interface{}) {
+	msg := &PublishMessage{Action: action, Data: data}
 	buf, err := json.Marshal(msg)
 	if err != nil {
-		log.Printf("publish marshal error: %s", err)
+		h.lgr.Error("API: failed to marshal PublishMessage", zap.String("action", action), zap.Error(err))
 		return
 	}
 
@@ -541,7 +551,7 @@ func (h *Handler) publish(msg interface{}) {
 		if err := conn.WriteMessage(websocket.TextMessage, buf); IsUnexpectedCloseError(err) {
 			continue
 		} else if err != nil {
-			log.Printf("publish write error: %s", err)
+			h.lgr.Error("API: failed to write PublishMessage", zap.String("action", action), zap.Error(err))
 			conn.Close()
 			delete(h.conns, conn)
 			continue
