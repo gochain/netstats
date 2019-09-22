@@ -5,11 +5,14 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
+	"go.uber.org/zap"
+
+	"github.com/blendle/zapdriver"
 	"github.com/gochain-io/netstats"
 	"github.com/gochain-io/netstats/geoip2"
 )
@@ -19,15 +22,21 @@ const (
 )
 
 func main() {
-	if err := run(os.Args[1:]); err == flag.ErrHelp {
-		os.Exit(1)
-	} else if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	start := time.Now()
+	lgr, err := zapdriver.NewProduction()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to create logger: %v\n", err)
 		os.Exit(1)
 	}
+	if err := run(lgr, os.Args[1:]); err == flag.ErrHelp {
+		os.Exit(1)
+	} else if err != nil {
+		lgr.Fatal("Fatal error", zap.Error(err), zap.Duration("runtime", time.Since(start)))
+	}
+	lgr.Info("Shutting down", zap.Duration("runtime", time.Since(start)))
 }
 
-func run(args []string) error {
+func run(lgr *zap.Logger, args []string) error {
 	defaultAddr := ":3000"
 	if v := os.Getenv("PORT"); v != "" {
 		defaultAddr = ":" + v
@@ -44,7 +53,7 @@ func run(args []string) error {
 	}
 
 	// Setup database.
-	db := netstats.NewDB(os.Getenv("NETWORK_NAME"))
+	db := netstats.NewDB(os.Getenv("NETWORK_NAME"), lgr)
 
 	// Read secret from environment variable, if blank.
 	if *apiSecret == "" {
@@ -52,7 +61,7 @@ func run(args []string) error {
 	}
 
 	// Read trusted nodes set.
-	trusted, err := readTrustedFile(*trustedF)
+	trusted, err := readTrustedFile(lgr, *trustedF)
 	if err != nil {
 		return err
 	}
@@ -67,9 +76,9 @@ func run(args []string) error {
 		db.GeoService = s
 	}
 
-	fmt.Printf("Listening on http://localhost%s\n", *addr)
+	lgr.Info("HTTP server listening", zap.String("host", *addr))
 
-	h := netstats.NewHandler()
+	h := netstats.NewHandler(lgr)
 	h.DB = db
 	h.DB.Trusted = trusted
 	h.DB.Strict = *strict
@@ -77,24 +86,22 @@ func run(args []string) error {
 	return http.ListenAndServe(*addr, h)
 }
 
-func readTrustedFile(path string) (netstats.GeoByIP, error) {
+func readTrustedFile(lgr *zap.Logger, path string) (netstats.GeoByIP, error) {
 	useDefault := path == ""
 	if useDefault {
 		path = DefaultTrustedPath
 	}
 
-	geoByIP := make(map[string]*netstats.Geo)
+	geoByIP := make(netstats.GeoByIP)
 	if buf, err := ioutil.ReadFile(path); os.IsNotExist(err) && useDefault {
-		log.Printf("No default trusted file found: %s\n", path)
+		lgr.Info("No default trusted file found", zap.String("path", path))
 		return geoByIP, nil
 	} else if err != nil {
 		return nil, err
 	} else if err := json.Unmarshal(buf, &geoByIP); err != nil {
 		return nil, err
 	}
-	log.Println("Loaded trusted nodes:")
-	for ip, geo := range geoByIP {
-		fmt.Printf("  %q: %#v\n", ip, geo)
-	}
+
+	lgr.Info("Loaded trusted nodes:", zap.Object("nodes", geoByIP))
 	return geoByIP, nil
 }

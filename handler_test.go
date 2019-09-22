@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"go.uber.org/zap/zaptest"
+
 	"github.com/gochain-io/netstats"
 	"github.com/google/go-cmp/cmp"
 	"github.com/gorilla/websocket"
@@ -13,7 +15,7 @@ import (
 
 func TestHandler(t *testing.T) {
 	t.Run("Init", func(t *testing.T) {
-		s := NewServer()
+		s := NewServer(t)
 		defer s.Close()
 
 		s.DB.Trusted = netstats.GeoByIP{
@@ -54,7 +56,7 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("Add", func(t *testing.T) {
-		s := NewServer()
+		s := NewServer(t)
 		defer s.Close()
 
 		apiConn := s.MustDial("/api")
@@ -86,7 +88,7 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("Block", func(t *testing.T) {
-		s := NewServer()
+		s := NewServer(t)
 		defer s.Close()
 
 		// Connect to api.
@@ -108,7 +110,7 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("Pending", func(t *testing.T) {
-		s := NewServer()
+		s := NewServer(t)
 		defer s.Close()
 
 		// Connect to api.
@@ -137,7 +139,7 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("Stats", func(t *testing.T) {
-		s := NewServer()
+		s := NewServer(t)
 		defer s.Close()
 
 		// Connect to api.
@@ -173,8 +175,8 @@ type Server struct {
 	DB      *DB
 }
 
-func NewServer() *Server {
-	s := &Server{Handler: netstats.NewHandler(), DB: NewDB()}
+func NewServer(t *testing.T) *Server {
+	s := &Server{Handler: netstats.NewHandler(zaptest.NewLogger(t)), DB: NewDB(t)}
 	s.Handler.DB = s.DB.DB
 	s.Handler.APISecrets = []string{"SECRET"}
 	s.Server = httptest.NewServer(s.Handler)

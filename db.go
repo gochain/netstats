@@ -3,15 +3,17 @@ package netstats
 import (
 	"context"
 	"fmt"
-	"log"
 	"math/rand"
 	"sort"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type DB struct {
 	networkName string
+	lgr         *zap.Logger
 
 	mu    sync.RWMutex
 	nodes map[string]*Node // items -- was array
@@ -36,11 +38,10 @@ type DB struct {
 	Now func() int64
 }
 
-type GeoByIP map[string]*Geo
-
-func NewDB(networkName string) *DB {
+func NewDB(networkName string, lgr *zap.Logger) *DB {
 	db := &DB{
 		networkName:  networkName,
+		lgr:          lgr,
 		nodes:        make(map[string]*Node),
 		blocks:       make(map[string]*Block),
 		propagations: make(map[string][]*Propagation),
@@ -145,14 +146,14 @@ func (db *DB) CreateNodeIfNotExists(ctx context.Context, node *Node) error {
 		if geo := db.Trusted[node.Info.IP]; geo != nil {
 			node.Trusted = true
 			node.Geo = geo.Clone()
-			log.Printf("Node %q is a trusted node: %#v", node.Info.IP, node.Geo)
+			db.lgr.Info("Added trusted node", zap.String("ip", node.Info.IP), zap.Object("geo", node.Geo))
 		} else if db.Strict {
 			return fmt.Errorf("untrusted IP: %s", node.Info.IP)
 		} else if geo, err := db.GeoService.GeoByIP(context.Background(), node.Info.IP); err != nil {
-			log.Printf("Cannot find geolocation by ip: %s", node.Info.IP)
+			db.lgr.Info("Failed to find geolocation", zap.String("ip", node.Info.IP))
 		} else if geo != nil {
 			node.Geo = geo.Clone()
-			log.Printf("Node %q is an unknown node: %#v", node.Info.IP, node.Geo)
+			db.lgr.Info("Added unknown node", zap.String("ip", node.Info.IP), zap.Object("geo", node.Geo))
 		}
 	} else if db.Strict {
 		return fmt.Errorf("unknown node: %#v", node.Info)
