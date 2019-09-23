@@ -10,11 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/blendle/zapdriver"
 	"github.com/gochain-io/netstats"
 	"github.com/gochain-io/netstats/geoip2"
+	"go.uber.org/zap"
 )
 
 const (
@@ -23,7 +22,9 @@ const (
 
 func main() {
 	start := time.Now()
-	lgr, err := zapdriver.NewProduction()
+	cfg := zapdriver.NewProductionConfig()
+	cfg.EncoderConfig.TimeKey = "timestamp"
+	lgr, err := cfg.Build()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create logger: %v\n", err)
 		os.Exit(1)
