@@ -22,9 +22,7 @@ const (
 
 func main() {
 	start := time.Now()
-	cfg := zapdriver.NewProductionConfig()
-	cfg.EncoderConfig.TimeKey = "timestamp"
-	lgr, err := cfg.Build()
+	lgr, err := zapdriver.NewProduction()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create logger: %v\n", err)
 		os.Exit(1)
