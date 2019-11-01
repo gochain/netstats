@@ -5,8 +5,7 @@ jobs:
       - image: google/cloud-sdk
     steps:
       - run: apt-get install -qqy build-essential
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
       - checkout
       - run: make docker-test
       - run: make docker
