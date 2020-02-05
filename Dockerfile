@@ -29,10 +29,4 @@ COPY --from=builder /tmp/netstats /usr/local/bin/netstats
 
 WORKDIR /netstats
 
-# Pull MaxMind city database.
-RUN wget http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz \
-	&& tar zxvf GeoLite2-City.tar.gz \
-	&& mv GeoLite2-City_*/GeoLite2-City.mmdb . \
-	&& rm -rf GeoLite2-City_*
-
-CMD ["netstats", "-geodb", "GeoLite2-City.mmdb", "-strict"]
+CMD ["netstats", "-strict"]

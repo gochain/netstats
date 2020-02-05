@@ -11,9 +11,10 @@ import (
 	"time"
 
 	"github.com/blendle/zapdriver"
-	"github.com/gochain-io/netstats"
-	"github.com/gochain-io/netstats/geoip2"
 	"go.uber.org/zap"
+
+	"github.com/gochain-io/netstats"
+	"github.com/gochain-io/netstats/ipapi"
 )
 
 const (
@@ -46,7 +47,6 @@ func run(lgr *zap.Logger, args []string) error {
 	apiSecret := fs.String("api-secret", "", "api secret")
 	trustedF := fs.String("trusted", "", "trusted geo path")
 	strict := fs.Bool("strict", false, "enable strict mode to only allow trusted IPs")
-	geoDBPath := fs.String("geodb", "", "MaxMind-City geo db path")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -65,15 +65,8 @@ func run(lgr *zap.Logger, args []string) error {
 		return err
 	}
 
-	// Read trusted nodes set.
-	if *geoDBPath != "" {
-		s := &geoip2.GeoService{Path: *geoDBPath}
-		if err := s.Open(); err != nil {
-			return err
-		}
-		defer s.Close()
-		db.GeoService = s
-	}
+	// use ip-api.com
+	db.GeoService = ipapi.DefaultClient
 
 	lgr.Info("HTTP server listening", zap.String("host", *addr))
 

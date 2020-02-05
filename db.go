@@ -140,7 +140,7 @@ func (db *DB) CreateNodeIfNotExists(ctx context.Context, node *Node) error {
 	// Update geolocation.
 	node = node.Clone()
 	if node.Geo == nil {
-		node.Geo = &Geo{LL: []float64{0, 0}}
+		node.Geo = &Geo{}
 	}
 	if node.Info != nil && node.Info.IP != "" {
 		if trusted := db.Trusted[node.Info.IP]; trusted != nil {

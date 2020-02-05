@@ -2,6 +2,7 @@ package netstats_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -26,7 +27,7 @@ func TestHandler(t *testing.T) {
 					Country: "US",
 					Region:  "CA",
 					City:    "Santa Clara",
-					LL:      []float64{1.23, 4.56},
+					LL:      [2]json.Number{"1.23", "4.56"},
 					Metro:   100,
 					Zip:     90210,
 				}},

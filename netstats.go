@@ -2,6 +2,7 @@ package netstats
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"math"
 	"sort"
@@ -129,7 +130,7 @@ type Node struct {
 func NewNode(timestamp int64) *Node {
 	node := &Node{
 		Info: &NodeInfo{},
-		Geo:  &Geo{LL: []float64{0, 0}},
+		Geo:  &Geo{},
 		Stats: &Stats{
 			Block: &Block{
 				Hash:         "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -295,20 +296,6 @@ func (n *Node) Clone() *Node {
 	return &other
 }
 
-// var geoip = require('geoip-lite');
-
-/*
-var file = 'trusted.json'
-var trusted = function() {
-    if(!fs.existsSync(file)) {
-        console.log("trusted.json not found");
-        return new Map();
-    }
-	data = fs.readFileSync(file)
-	return JSON.parse(data);
-}();
-*/
-
 // ErrIPNotFound is returned by GeoService.GeoByIP if an IP address is not found.
 var ErrIPNotFound = errors.New("ip address not found")
 
@@ -342,19 +329,20 @@ func (tp TrustedByIP) MarshalLogObject(oe zapcore.ObjectEncoder) error {
 }
 
 type Geo struct {
-	City    string    `json:"city"`
-	Country string    `json:"country"`
-	LL      []float64 `json:"ll"`
-	Metro   int       `json:"metro"`
-	Range   []int     `json:"range"`
-	Region  string    `json:"region"`
-	Zip     int       `json:"zip"`
+	City    string         `json:"city"`
+	Country string         `json:"country"`
+	LL      [2]json.Number `json:"ll"`
+	Metro   int            `json:"metro"`
+	Range   []int          `json:"range"`
+	Region  string         `json:"region"`
+	Zip     int            `json:"zip"`
 }
 
 func (g *Geo) MarshalLogObject(oe zapcore.ObjectEncoder) error {
 	oe.AddString("city", g.City)
 	oe.AddString("country", g.Country)
-	zap.Float64s("ll", g.LL).AddTo(oe)
+	zap.String("lat", g.LL[0].String()).AddTo(oe)
+	zap.String("long", g.LL[1].String()).AddTo(oe)
 	zap.Int("metro", g.Metro)
 	zap.Ints("range", g.Range)
 	zap.String("region", g.Region)
@@ -365,10 +353,7 @@ func (g *Geo) MarshalLogObject(oe zapcore.ObjectEncoder) error {
 // Clone returns a deep copy of g.
 func (g *Geo) Clone() *Geo {
 	other := *g
-	if g.LL != nil {
-		other.LL = make([]float64, len(g.LL))
-		copy(other.LL, g.LL)
-	}
+	other.LL = g.LL
 	if g.Range != nil {
 		other.Range = make([]int, len(g.Range))
 		copy(other.Range, g.Range)
