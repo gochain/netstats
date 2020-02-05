@@ -85,22 +85,22 @@ func run(lgr *zap.Logger, args []string) error {
 	return http.ListenAndServe(*addr, h)
 }
 
-func readTrustedFile(lgr *zap.Logger, path string) (netstats.GeoByIP, error) {
+func readTrustedFile(lgr *zap.Logger, path string) (netstats.TrustedByIP, error) {
 	useDefault := path == ""
 	if useDefault {
 		path = DefaultTrustedPath
 	}
 
-	geoByIP := make(netstats.GeoByIP)
+	trusted := make(netstats.TrustedByIP)
 	if buf, err := ioutil.ReadFile(path); os.IsNotExist(err) && useDefault {
 		lgr.Info("No default trusted file found", zap.String("path", path))
-		return geoByIP, nil
+		return trusted, nil
 	} else if err != nil {
 		return nil, err
-	} else if err := json.Unmarshal(buf, &geoByIP); err != nil {
+	} else if err := json.Unmarshal(buf, &trusted); err != nil {
 		return nil, err
 	}
 
-	lgr.Info("Loaded trusted nodes:", zap.Object("nodes", geoByIP))
-	return geoByIP, nil
+	lgr.Info("Loaded trusted nodes:", zap.Object("nodes", trusted))
+	return trusted, nil
 }

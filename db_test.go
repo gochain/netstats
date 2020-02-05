@@ -47,7 +47,7 @@ func TestDB_CreateNodeIfNotExists(t *testing.T) {
 	// Ensure a registered IP is marked as trusted and geolocation is updated.
 	t.Run("Trusted", func(t *testing.T) {
 		db := NewDB(t)
-		db.Trusted["127.0.0.1"] = &netstats.Geo{City: "New York", Country: "USA"}
+		db.Trusted["127.0.0.1"] = &netstats.Trusted{Geo: netstats.Geo{City: "New York", Country: "USA"}}
 		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{
 			ID:   "X",
 			Info: &netstats.NodeInfo{IP: "127.0.0.1"},

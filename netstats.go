@@ -325,11 +325,16 @@ func (s *NopGeoService) GeoByIP(ctx context.Context, ip string) (*Geo, error) {
 	return nil, ErrIPNotFound
 }
 
-type GeoByIP map[string]*Geo
+type Trusted struct {
+	ID string `json:"id"`
+	Geo
+}
 
-func (gs GeoByIP) MarshalLogObject(oe zapcore.ObjectEncoder) error {
-	for ip, geo := range gs {
-		if err := oe.AddObject(ip, geo); err != nil {
+type TrustedByIP map[string]*Trusted
+
+func (tp TrustedByIP) MarshalLogObject(oe zapcore.ObjectEncoder) error {
+	for ip, t := range tp {
+		if err := oe.AddObject(ip, t); err != nil {
 			return err
 		}
 	}

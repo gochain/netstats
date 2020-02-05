@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gochain-io/netstats"
-	"github.com/oschwald/geoip2-golang"
+	geoip2 "github.com/oschwald/geoip2-golang"
 )
 
 // Ensure implementation implements interface.

@@ -16,7 +16,7 @@ type DB struct {
 	lgr         *zap.Logger
 
 	mu    sync.RWMutex
-	nodes map[string]*Node // items -- was array
+	nodes map[string]*Node // by ID
 
 	blocks       map[string]*Block         // blocks by hash
 	propagations map[string][]*Propagation // propagations by hash
@@ -26,12 +26,12 @@ type DB struct {
 	chart       *Chart        // cached chart data
 	chartNotify chan struct{} // notify clients of new chart
 
-	// Set of geolocations for trusted IPs. Must be set before using DB.
-	Trusted GeoByIP
+	// Set of data for trusted IPs. Must be set before using DB.
+	Trusted TrustedByIP
 	// If true, only allow trusted IPs.
 	Strict bool
 
-	// Geolocation service used for IPs not in GeoByIP.
+	// Geolocation service used for IPs not in TrustedByIP.
 	GeoService GeoService
 
 	// Now returns the current time, in milliseconds.
@@ -50,7 +50,7 @@ func NewDB(networkName string, lgr *zap.Logger) *DB {
 
 		chartNotify: make(chan struct{}),
 
-		Trusted:    make(GeoByIP),
+		Trusted:    make(TrustedByIP),
 		GeoService: &NopGeoService{},
 
 		Now: func() int64 { return int64(time.Now().UnixNano() / int64(time.Millisecond)) },
@@ -143,17 +143,28 @@ func (db *DB) CreateNodeIfNotExists(ctx context.Context, node *Node) error {
 		node.Geo = &Geo{LL: []float64{0, 0}}
 	}
 	if node.Info != nil && node.Info.IP != "" {
-		if geo := db.Trusted[node.Info.IP]; geo != nil {
+		if trusted := db.Trusted[node.Info.IP]; trusted != nil {
 			node.Trusted = true
-			node.Geo = geo.Clone()
-			db.lgr.Info("Added trusted node", zap.String("ip", node.Info.IP), zap.Object("geo", node.Geo))
+			node.Geo = trusted.Geo.Clone()
+			if trusted.ID != "" {
+				node.ID = trusted.ID
+			} else if node.ID == "" {
+				return fmt.Errorf("unamed node: %s", node.Info.IP)
+			}
+			db.lgr.Info("Added trusted node", zap.String("ip", node.Info.IP), zap.String("id", node.ID), zap.Object("geo", node.Geo))
 		} else if db.Strict {
 			return fmt.Errorf("untrusted IP: %s", node.Info.IP)
-		} else if geo, err := db.GeoService.GeoByIP(context.Background(), node.Info.IP); err != nil {
-			db.lgr.Info("Failed to find geolocation", zap.String("ip", node.Info.IP))
-		} else if geo != nil {
-			node.Geo = geo.Clone()
-			db.lgr.Info("Added unknown node", zap.String("ip", node.Info.IP), zap.Object("geo", node.Geo))
+		} else {
+			// Untrusted, but we're not in strict mode.
+			if node.ID == "" {
+				return fmt.Errorf("unamed node: %s", node.Info.IP)
+			}
+			if geo, err := db.GeoService.GeoByIP(context.Background(), node.Info.IP); err != nil {
+				db.lgr.Info("Added unknown node, but failed to find geolocation", zap.String("ip", node.Info.IP), zap.String("id", node.ID))
+			} else if geo != nil {
+				node.Geo = geo.Clone()
+				db.lgr.Info("Added unknown node", zap.String("ip", node.Info.IP), zap.String("id", node.ID), zap.Object("geo", node.Geo))
+			}
 		}
 	} else if db.Strict {
 		return fmt.Errorf("unknown node: %#v", node.Info)
