@@ -31,7 +31,7 @@ func TestDB_CreateNodeIfNotExists(t *testing.T) {
 			t.Fatal(err)
 		} else if diff := cmp.Diff(node, &netstats.Node{
 			ID:    "X",
-			Geo:   &netstats.Geo{LL: []float64{0, 0}},
+			Geo:   &netstats.Geo{},
 			Info:  &netstats.NodeInfo{},
 			Stats: &netstats.Stats{Active: true, Uptime: 100},
 			Uptime: &netstats.Uptime{
@@ -47,7 +47,7 @@ func TestDB_CreateNodeIfNotExists(t *testing.T) {
 	// Ensure a registered IP is marked as trusted and geolocation is updated.
 	t.Run("Trusted", func(t *testing.T) {
 		db := NewDB(t)
-		db.Trusted["127.0.0.1"] = &netstats.Geo{City: "New York", Country: "USA"}
+		db.Trusted["127.0.0.1"] = &netstats.Trusted{Geo: netstats.Geo{City: "New York", Country: "USA"}}
 		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{
 			ID:   "X",
 			Info: &netstats.NodeInfo{IP: "127.0.0.1"},
@@ -89,7 +89,7 @@ func TestDB_CreateNodeIfNotExists(t *testing.T) {
 			t.Fatal(err)
 		} else if diff := cmp.Diff(node, &netstats.Node{
 			ID:    "X",
-			Geo:   &netstats.Geo{LL: []float64{0, 0}},
+			Geo:   &netstats.Geo{},
 			Info:  nil,
 			Stats: &netstats.Stats{Active: true, Uptime: 100},
 			Uptime: &netstats.Uptime{
@@ -188,7 +188,7 @@ func TestDB_AddBlock(t *testing.T) {
 			t.Fatal(err)
 		} else if diff := cmp.Diff(node, &netstats.Node{
 			ID:      "X",
-			Geo:     &netstats.Geo{LL: []float64{0, 0}},
+			Geo:     &netstats.Geo{},
 			History: []int64{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0},
 			Info:    &netstats.NodeInfo{},
 			Stats: &netstats.Stats{
@@ -234,7 +234,7 @@ func TestDB_AddBlock(t *testing.T) {
 			t.Fatal(err)
 		} else if diff := cmp.Diff(node, &netstats.Node{
 			ID:      "X",
-			Geo:     &netstats.Geo{LL: []float64{0, 0}},
+			Geo:     &netstats.Geo{},
 			History: []int64{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0},
 			Info:    &netstats.NodeInfo{},
 			Stats: &netstats.Stats{
@@ -309,7 +309,7 @@ func TestDB_AddBlock(t *testing.T) {
 			t.Fatal(err)
 		} else if diff := cmp.Diff(node, &netstats.Node{
 			ID:      "X",
-			Geo:     &netstats.Geo{LL: []float64{0, 0}},
+			Geo:     &netstats.Geo{},
 			History: []int64{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0},
 			Info:    &netstats.NodeInfo{},
 			Stats: &netstats.Stats{
@@ -397,7 +397,7 @@ func TestDB_AddBlock(t *testing.T) {
 			t.Fatal(err)
 		} else if diff := cmp.Diff(node, &netstats.Node{
 			ID:      "X",
-			Geo:     &netstats.Geo{LL: []float64{0, 0}},
+			Geo:     &netstats.Geo{},
 			History: []int64{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0},
 			Info:    &netstats.NodeInfo{},
 			Stats: &netstats.Stats{
@@ -427,7 +427,7 @@ func TestDB_AddBlock(t *testing.T) {
 			t.Fatal(err)
 		} else if diff := cmp.Diff(node, &netstats.Node{
 			ID:      "Y",
-			Geo:     &netstats.Geo{LL: []float64{0, 0}},
+			Geo:     &netstats.Geo{},
 			History: []int64{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1000},
 			Info:    &netstats.NodeInfo{},
 			Stats: &netstats.Stats{
@@ -459,7 +459,7 @@ func TestDB_AddBlock(t *testing.T) {
 			t.Fatal(err)
 		} else if diff := cmp.Diff(node, &netstats.Node{
 			ID:      "Z",
-			Geo:     &netstats.Geo{LL: []float64{0, 0}},
+			Geo:     &netstats.Geo{},
 			History: []int64{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 3000, -1},
 			Info:    &netstats.NodeInfo{},
 			Stats: &netstats.Stats{
@@ -517,7 +517,7 @@ func TestDB_AddBlock(t *testing.T) {
 			t.Fatal(err)
 		} else if diff := cmp.Diff(node, &netstats.Node{
 			ID:      "X",
-			Geo:     &netstats.Geo{LL: []float64{0, 0}},
+			Geo:     &netstats.Geo{},
 			History: []int64{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0},
 			Info:    &netstats.NodeInfo{},
 			Stats: &netstats.Stats{
@@ -605,7 +605,7 @@ func TestDB_AddBlocks(t *testing.T) {
 			t.Fatal(err)
 		} else if diff := cmp.Diff(node, &netstats.Node{
 			ID:   "X",
-			Geo:  &netstats.Geo{LL: []float64{0, 0}},
+			Geo:  &netstats.Geo{},
 			Info: &netstats.NodeInfo{},
 			Stats: &netstats.Stats{
 				Active: true,
@@ -671,7 +671,7 @@ func TestDB_SetInactive(t *testing.T) {
 			t.Fatal(err)
 		} else if diff := cmp.Diff(node, &netstats.Node{
 			ID:   "X",
-			Geo:  &netstats.Geo{LL: []float64{0, 0}},
+			Geo:  &netstats.Geo{},
 			Info: &netstats.NodeInfo{},
 			Stats: &netstats.Stats{
 				Active: false,
@@ -723,7 +723,7 @@ func TestDB_SetInactive(t *testing.T) {
 			t.Fatal(err)
 		} else if diff := cmp.Diff(node, &netstats.Node{
 			ID:   "X",
-			Geo:  &netstats.Geo{LL: []float64{0, 0}},
+			Geo:  &netstats.Geo{},
 			Info: nil,
 			Stats: &netstats.Stats{
 				Active: false,

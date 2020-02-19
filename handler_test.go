@@ -2,6 +2,7 @@ package netstats_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -18,16 +19,18 @@ func TestHandler(t *testing.T) {
 		s := NewServer(t)
 		defer s.Close()
 
-		s.DB.Trusted = netstats.GeoByIP{
-			"127.0.0.1": &netstats.Geo{
-				Range:   []int{1, 2},
-				Country: "US",
-				Region:  "CA",
-				City:    "Santa Clara",
-				LL:      []float64{1.23, 4.56},
-				Metro:   100,
-				Zip:     90210,
-			},
+		s.DB.Trusted = netstats.TrustedByIP{
+			"127.0.0.1": &netstats.Trusted{
+				ID: "",
+				Geo: netstats.Geo{
+					Range:   []int{1, 2},
+					Country: "US",
+					Region:  "CA",
+					City:    "Santa Clara",
+					LL:      [2]json.Number{"1.23", "4.56"},
+					Metro:   100,
+					Zip:     90210,
+				}},
 		}
 
 		// Connect to api and receive ready emit.

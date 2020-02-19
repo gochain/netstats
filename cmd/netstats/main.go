@@ -11,9 +11,10 @@ import (
 	"time"
 
 	"github.com/blendle/zapdriver"
-	"github.com/gochain-io/netstats"
-	"github.com/gochain-io/netstats/geoip2"
 	"go.uber.org/zap"
+
+	"github.com/gochain-io/netstats"
+	"github.com/gochain-io/netstats/ipapi"
 )
 
 const (
@@ -46,7 +47,6 @@ func run(lgr *zap.Logger, args []string) error {
 	apiSecret := fs.String("api-secret", "", "api secret")
 	trustedF := fs.String("trusted", "", "trusted geo path")
 	strict := fs.Bool("strict", false, "enable strict mode to only allow trusted IPs")
-	geoDBPath := fs.String("geodb", "", "MaxMind-City geo db path")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -65,15 +65,8 @@ func run(lgr *zap.Logger, args []string) error {
 		return err
 	}
 
-	// Read trusted nodes set.
-	if *geoDBPath != "" {
-		s := &geoip2.GeoService{Path: *geoDBPath}
-		if err := s.Open(); err != nil {
-			return err
-		}
-		defer s.Close()
-		db.GeoService = s
-	}
+	// use ip-api.com
+	db.GeoService = ipapi.DefaultClient
 
 	lgr.Info("HTTP server listening", zap.String("host", *addr))
 
@@ -85,22 +78,22 @@ func run(lgr *zap.Logger, args []string) error {
 	return http.ListenAndServe(*addr, h)
 }
 
-func readTrustedFile(lgr *zap.Logger, path string) (netstats.GeoByIP, error) {
+func readTrustedFile(lgr *zap.Logger, path string) (netstats.TrustedByIP, error) {
 	useDefault := path == ""
 	if useDefault {
 		path = DefaultTrustedPath
 	}
 
-	geoByIP := make(netstats.GeoByIP)
+	trusted := make(netstats.TrustedByIP)
 	if buf, err := ioutil.ReadFile(path); os.IsNotExist(err) && useDefault {
 		lgr.Info("No default trusted file found", zap.String("path", path))
-		return geoByIP, nil
+		return trusted, nil
 	} else if err != nil {
 		return nil, err
-	} else if err := json.Unmarshal(buf, &geoByIP); err != nil {
+	} else if err := json.Unmarshal(buf, &trusted); err != nil {
 		return nil, err
 	}
 
-	lgr.Info("Loaded trusted nodes:", zap.Object("nodes", geoByIP))
-	return geoByIP, nil
+	lgr.Info("Loaded trusted nodes:", zap.Object("nodes", trusted))
+	return trusted, nil
 }
