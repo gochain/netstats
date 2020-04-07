@@ -149,6 +149,7 @@ func (db *DB) CreateNodeIfNotExists(ctx context.Context, node *Node) (string, er
 			node.Geo = trusted.Geo.Clone()
 			if trusted.ID != "" {
 				node.ID = trusted.ID
+				node.Info.Name = trusted.ID
 			} else if node.ID == "" {
 				return "", fmt.Errorf("unamed node: %s", node.Info.IP)
 			}

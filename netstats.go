@@ -361,6 +361,8 @@ func (g *Geo) Clone() *Geo {
 	return &other
 }
 
+// This data is reported by the node and forwarded to clients,
+// but the Name may be modified for trusted nodes.
 type NodeInfo struct {
 	API              string `json:"api,omitempty"`
 	CanUpdateHistory bool   `json:"canUpdateHistory,omitempty"`
