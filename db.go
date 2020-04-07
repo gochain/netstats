@@ -133,6 +133,7 @@ func (db *DB) Blocks(ctx context.Context) ([]*Block, error) {
 }
 
 // CreateNodeIfNotExists adds the node to the database if it is not already registered.
+// If the node is trusted, the ID may be updated.
 func (db *DB) CreateNodeIfNotExists(ctx context.Context, node *Node) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()

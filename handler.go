@@ -122,7 +122,7 @@ func (h *Handler) handleAPI(w http.ResponseWriter, r *http.Request) {
 		// Fetch data if set as second argument.
 		var dataBuf []byte
 		if len(msg.Emit) > 1 {
-			dataBuf = []byte(msg.Emit[1])
+			dataBuf = msg.Emit[1]
 		}
 
 		lgr := h.lgr.With(zap.String("action", action))
@@ -141,14 +141,13 @@ func (h *Handler) handleAPI(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			authorized = true
-			nodeID = data.ID
 
 			if data.Info == nil {
 				data.Info = &NodeInfo{}
 			}
 
 			node := NewNode(h.DB.Now())
-			node.ID = nodeID
+			node.ID = data.ID
 			node.Info = data.Info
 			node.Info.IP = realip.FromRequest(r)
 			node.Stats.Latency = data.Latency
@@ -157,6 +156,7 @@ func (h *Handler) handleAPI(w http.ResponseWriter, r *http.Request) {
 				lgr.Error("API: failed to add node", zap.String("action", action), zap.Error(err))
 				return
 			}
+			nodeID = node.ID // May have updated ID for trusted node
 
 			node, err := h.DB.FindNodeByID(r.Context(), nodeID)
 			if err != nil {
