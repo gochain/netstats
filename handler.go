@@ -152,11 +152,13 @@ func (h *Handler) handleAPI(w http.ResponseWriter, r *http.Request) {
 			node.Info.IP = realip.FromRequest(r)
 			node.Stats.Latency = data.Latency
 
-			if err := h.DB.CreateNodeIfNotExists(r.Context(), node); err != nil {
+			if id, err := h.DB.CreateNodeIfNotExists(r.Context(), node); err != nil {
 				lgr.Error("API: failed to add node", zap.String("action", action), zap.Error(err))
 				return
+			} else {
+				// May have updated ID for trusted node
+				nodeID = id
 			}
-			nodeID = node.ID // May have updated ID for trusted node
 
 			node, err := h.DB.FindNodeByID(r.Context(), nodeID)
 			if err != nil {

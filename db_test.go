@@ -24,7 +24,7 @@ func TestDB_CreateNodeIfNotExists(t *testing.T) {
 	// Ensure an unregistered IP is marked as untrusted.
 	t.Run("Untrusted", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		}
 		if node, err := db.FindNodeByID(ctx, "X"); err != nil {
@@ -48,7 +48,7 @@ func TestDB_CreateNodeIfNotExists(t *testing.T) {
 	t.Run("Trusted", func(t *testing.T) {
 		db := NewDB(t)
 		db.Trusted["127.0.0.1"] = &netstats.Trusted{Geo: netstats.Geo{City: "New York", Country: "USA"}}
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{
 			ID:   "X",
 			Info: &netstats.NodeInfo{IP: "127.0.0.1"},
 		}); err != nil {
@@ -76,12 +76,12 @@ func TestDB_CreateNodeIfNotExists(t *testing.T) {
 	// Ensure that readding a node updates its status.
 	t.Run("AlreadyExists", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		}
 
 		db.Now = db.Now.Add(time.Second)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		}
 
@@ -107,7 +107,7 @@ func TestDB_CreateNodeIfNotExists(t *testing.T) {
 func TestDB_UpdatePending(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		} else if err := db.UpdatePending(ctx, "X", 1000); err != nil {
 			t.Fatal(err)
@@ -135,7 +135,7 @@ func TestDB_UpdatePending(t *testing.T) {
 func TestDB_UpdateStats(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		} else if err := db.UpdateStats(ctx, "X", netstats.Stats{
 			Active:   false,
@@ -175,7 +175,7 @@ func TestDB_UpdateStats(t *testing.T) {
 func TestDB_AddBlock(t *testing.T) {
 	t.Run("InitialBlock", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		} else if err := db.AddBlock(ctx, "X", &netstats.Block{
 			Hash:       "0x0000",
@@ -214,7 +214,7 @@ func TestDB_AddBlock(t *testing.T) {
 
 	t.Run("Readd", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		}
 		if err := db.AddBlock(ctx, "X", &netstats.Block{
@@ -260,7 +260,7 @@ func TestDB_AddBlock(t *testing.T) {
 
 	t.Run("MultipleBlocks", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		}
 
@@ -337,11 +337,11 @@ func TestDB_AddBlock(t *testing.T) {
 
 	t.Run("MultipleNodes", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
-		} else if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "Y"}); err != nil {
+		} else if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "Y"}); err != nil {
 			t.Fatal(err)
-		} else if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "Z"}); err != nil {
+		} else if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "Z"}); err != nil {
 			t.Fatal(err)
 		}
 
@@ -489,7 +489,7 @@ func TestDB_AddBlock(t *testing.T) {
 
 	t.Run("ExceedMaxHistory", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		}
 
@@ -551,7 +551,7 @@ func TestDB_AddBlock(t *testing.T) {
 
 	t.Run("ErrBlockRequired", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		} else if err := db.AddBlock(ctx, "X", nil); err != netstats.ErrBlockRequired {
 			t.Fatalf("unexpected error: %v", err)
@@ -562,7 +562,7 @@ func TestDB_AddBlock(t *testing.T) {
 func TestDB_AddBlocks(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		}
 
@@ -632,7 +632,7 @@ func TestDB_AddBlocks(t *testing.T) {
 func TestDB_UpdateLatency(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		}
 
@@ -658,7 +658,7 @@ func TestDB_UpdateLatency(t *testing.T) {
 func TestDB_SetInactive(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		}
 
@@ -690,7 +690,7 @@ func TestDB_SetInactive(t *testing.T) {
 
 	t.Run("Toggle", func(t *testing.T) {
 		db := NewDB(t)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		}
 
@@ -700,12 +700,12 @@ func TestDB_SetInactive(t *testing.T) {
 		}
 
 		db.Now = db.Now.Add(10 * time.Second)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		}
 
 		db.Now = db.Now.Add(20 * time.Second)
-		if err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
+		if _, err := db.CreateNodeIfNotExists(ctx, &netstats.Node{ID: "X"}); err != nil {
 			t.Fatal(err)
 		}
 
