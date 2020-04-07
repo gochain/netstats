@@ -133,8 +133,8 @@ func (db *DB) Blocks(ctx context.Context) ([]*Block, error) {
 }
 
 // CreateNodeIfNotExists adds the node to the database if it is not already registered.
-// If the node is trusted, the ID may be updated.
-func (db *DB) CreateNodeIfNotExists(ctx context.Context, node *Node) error {
+// Returns the node's ID, which may be updated if the node is trusted.
+func (db *DB) CreateNodeIfNotExists(ctx context.Context, node *Node) (string, error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 
@@ -150,15 +150,15 @@ func (db *DB) CreateNodeIfNotExists(ctx context.Context, node *Node) error {
 			if trusted.ID != "" {
 				node.ID = trusted.ID
 			} else if node.ID == "" {
-				return fmt.Errorf("unamed node: %s", node.Info.IP)
+				return "", fmt.Errorf("unamed node: %s", node.Info.IP)
 			}
 			db.lgr.Info("Added trusted node", zap.String("ip", node.Info.IP), zap.String("id", node.ID), zap.Object("geo", node.Geo))
 		} else if db.Strict {
-			return fmt.Errorf("untrusted IP: %s", node.Info.IP)
+			return "", fmt.Errorf("untrusted IP: %s", node.Info.IP)
 		} else {
 			// Untrusted, but we're not in strict mode.
 			if node.ID == "" {
-				return fmt.Errorf("unamed node: %s", node.Info.IP)
+				return "", fmt.Errorf("unamed node: %s", node.Info.IP)
 			}
 			if geo, err := db.GeoService.GeoByIP(context.Background(), node.Info.IP); err != nil {
 				db.lgr.Info("Added unknown node, but failed to find geolocation", zap.String("ip", node.Info.IP), zap.String("id", node.ID))
@@ -168,14 +168,14 @@ func (db *DB) CreateNodeIfNotExists(ctx context.Context, node *Node) error {
 			}
 		}
 	} else if db.Strict {
-		return fmt.Errorf("unknown node: %#v", node.Info)
+		return "", fmt.Errorf("unknown node: %#v", node.Info)
 	}
 
 	// If node already exists, simply mark it as active.
 	if n := db.nodes[node.ID]; n != nil {
 		n.Info = node.Info
 		n.setState(true, db.Now())
-		return nil
+		return node.ID, nil
 	}
 
 	// Otherwise initialize.
@@ -193,7 +193,7 @@ func (db *DB) CreateNodeIfNotExists(ctx context.Context, node *Node) error {
 	// Mark node as active.
 	node.setState(true, db.Now())
 
-	return nil
+	return node.ID, nil
 }
 
 // UpdatePending updates the pending stat for a given node.
