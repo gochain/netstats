@@ -75,7 +75,8 @@ angular.module('netStatsApp.filters', [])
 			return numberFilter(price/1000000000) + " gwei";
 
 		if(price.length < 16)
-			return numberFilter(price/1000000000000) + " szabo";
+			return numberFilter(price/1000000000) + " gwei"; // prefer > 1000 gwei over szabo
+			// return numberFilter(price/1000000000000) + " szabo";
 
 		if(price.length < 19)
 			return numberFilter(price.substr(0, price.length - 15)) + " finney";
@@ -232,21 +233,24 @@ angular.module('netStatsApp.filters', [])
 		if (rate === null)
 			rate = 0;
 
-		var result = 0;
+		var result = '0';
 		var unit = '';
 
-		if (rate < 10000) {
-			result = rate;
+		if (rate < 1) {
+			result = rate.toFixed(2);
+			unit = '';
+		} else if (rate < 10000) {
+			result = rate.toFixed(0);
 			unit = '';
 		} else if (rate < Math.pow(1000, 2)) {
-			result = rate / 1000;
+			result = (rate / 1000).toFixed(0);
 			unit = 'K';
 		} else if (rate >= Math.pow(1000, 2)) { // keeping the condition to cover the zero case
-			result = rate / Math.pow(1000, 2);
+			result = (rate / Math.pow(1000, 2)).toFixed(0);
 			unit = 'M';
 		}
 
-		return $sce.trustAsHtml(filter('number')(result.toFixed(0)) + ' <span class="small-hash">' + unit + 'tx/s</span>');
+		return $sce.trustAsHtml(filter('number')(result) + ' <span class="small-hash">' + unit + 'tx/s</span>');
 	};
 }])
 .filter('latencyCellFilter', function() {
