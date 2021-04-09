@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -574,7 +575,13 @@ func (bc *Blockchain) Chart() *Chart {
 	chart.Miners = bc.MinersCount()
 	chart.Propagation = bc.BlockPropagation()
 	if len(bc.blocks) > 0 && sumTime >= 1000 {
-		chart.AvgTransactionRate = transactionCount / (int(sumTime) / 1000)
+		avgTransactionRate := decimal.NewFromInt(int64(transactionCount)).
+			Div(decimal.New(sumTime, -3))
+		if avgTransactionRate.LessThan(decimal.NewFromInt(1)) {
+			chart.AvgTransactionRate = json.Number(avgTransactionRate.StringFixed(2))
+		} else {
+			chart.AvgTransactionRate = json.Number(avgTransactionRate.StringFixed(0))
+		}
 		chart.AvgHashRate = (bc.blocks[len(bc.blocks)-1].Difficulty / (int(sumTime) / len(bc.blocks)) / 1000)
 	}
 
@@ -633,7 +640,7 @@ type Chart struct {
 	Miners             []*ChartMiner `json:"miners"`
 	UncleCount         []int         `json:"uncleCount"`
 	AvgHashRate        int           `json:"avgHashrate"`
-	AvgTransactionRate int           `json:"avgTransactionRate"`
+	AvgTransactionRate json.Number   `json:"avgTransactionRate"`
 
 	Propagation *BlockPropagationStats `json:"propagation"`
 }
