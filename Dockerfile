@@ -1,7 +1,7 @@
 # Build in a stock Go builder container
 FROM golang:1.16-alpine as builder
 
-RUN apk --no-cache add build-base git bzr mercurial gcc linux-headers npm
+RUN apk --no-cache add build-base git mercurial gcc linux-headers npm
 RUN npm install -g grunt-cli
 
 ENV GENESIS_VERSION 0.2.1
