@@ -1,0 +1,132 @@
+{
+  "165.22.217.23": {
+    "city": "Bangalore",
+    "country": "India",
+    "ll": [12.9716, 77.5946]
+  },
+  "141.193.84.27": {
+    "city": "Nassau",
+    "country": "BS",
+    "ll": [25.0833, -77.35]
+  },
+  "5.104.228.29": {
+    "country": "NL",
+    "ll": [52.3824, 4.8995]
+  },
+  "35.171.71.251": {
+    "city": "Ashburn",
+    "region": "Virginia",
+    "country": "US",
+    "ll": [39.0481, -77.4728]
+  },
+  "159.203.59.117": {
+    "city": "Toronto",
+    "region": "Ontario",
+    "country": "CA",
+    "ll": [43.6547, -79.3623]
+  },
+  "52.52.195.152": {
+    "city": "San Jose",
+    "region": "California",
+    "country": "US",
+    "ll": [37.3388, -121.8914]
+  },
+  "104.199.146.231": {
+    "city": "Changhua County",
+    "country": "Taiwan",
+    "ll": [24.0518, 120.5161]
+  },
+  "54.248.0.58": {
+    "city": "Tokyo",
+    "region": "Tokyo",
+    "country": "Japan",
+    "ll": [35.6882, 139.7532]
+  },
+  "35.200.172.87": {
+    "city": "Mumbai",
+    "country": "India",
+    "ll": [19.0760, 72.8777]
+  },
+  "34.92.140.239": {
+    "country": "China",
+    "city": "Hong Kong",
+    "ll": [22.3193, 114.1694]
+  },
+  "34.95.189.89": {
+    "country":"Brazil",
+    "city":"Sao Paulo",
+    "ll":[-23.5505, -46.6333]
+  },
+  "34.89.251.2": {
+    "country": "Germany",
+    "city": "Frankfurt",
+    "ll": [50.1109, 8.6821]
+  },
+  "34.87.54.179": {
+    "city": "Singapore",
+    "country": "SG",
+    "ll": [1.3521, 103.8198]
+  },
+  "35.246.59.108": {
+    "country": "England",
+    "city": "London",
+    "ll": [51.5074, -0.1278]
+  },
+  "65.151.160.30": {
+    "country": "US",
+    "city": "Whittier",
+    "region": "California",
+    "ll": [33.9792, -118.0328]
+  },
+  "34.93.93.7": {
+    "city": "Mumbai",
+    "country": "India",
+    "ll": [19.0760, 72.8777]
+  },
+  "35.194.238.37": {
+    "city": "Changhua County",
+    "country": "Taiwan",
+    "ll": [24.0518, 120.5161]
+  },
+  "35.228.110.165": {
+    "city": "Hamina",
+    "country": "Finland",
+    "ll": [60.5693, 27.1878]
+  },
+  "52.237.88.221": {
+    "city": "Singapore",
+    "country": "SG",
+    "ll": [1.3521, 103.8198]
+  },
+  "34.225.145.242": {
+    "country": "US",
+    "city": "Virginia",
+    "ll": [37.926868, -78.024902]
+  },
+  "87.228.184.194": {
+    "id": "University of Nicosia",
+    "country": "Cyprus",
+    "city": "Nicosia",
+    "ll": [35.165697, 33.314847]
+  },
+  "34.86.155.11": {
+    "country": "US",
+    "city": "Virginia",
+    "ll": [39.0481, -78.0249]
+  },
+  "34.106.155.154": {
+    "country": "US",
+    "city": "Salt Lake City",
+    "ll": [40.7608, -111.8910]
+  },
+  "34.87.199.44": {
+    "country": "Australia",
+    "city": "Sydney",
+    "ll": [-33.8688, 151.2093]
+  },
+  "13.246.45.165": {
+    "country": "Rwanda",
+    "city": "Musanze",
+    "ll": [-1.49984, 29.63497]
+  }
+}
