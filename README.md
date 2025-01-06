@@ -1,6 +1,5 @@
 GoStats - GoChain Network Stats Dashboard
 ============
-[![CircleCI](https://circleci.com/gh/gochain-io/netstats/tree/master.svg?style=svg)](https://circleci.com/gh/gochain-io/netstats/tree/master)
 
 This is a visual interface for tracking GoChain network status. It uses WebSockets to receive stats from running nodes and output them through an angular interface.
 
