@@ -11,13 +11,14 @@ This is a visual interface for tracking GoChain network status. It uses WebSocke
 
 ## Run
 
+Just run this:
+
 ```sh
 export WS_SECRET=YOURSECRET
-make docker
 WS_SECRET=YOOOOO make run
 ```
 
-Check it out at http://localhost:3000
+Then browse to: http://localhost:3000
 
 # Running outside Docker
 

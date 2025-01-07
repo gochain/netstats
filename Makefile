@@ -9,7 +9,7 @@ docker-test:
 	docker build --target builder -t gochain/netstats-builder .
 	docker run gochain/netstats-builder go test ./...
 
-run:
+run: docker
 	docker run --rm -it -p 3000:3000 -e WS_SECRET=$(WS_SECRET) gochain/netstats
 
 release: docker
